@@ -1,0 +1,507 @@
+[
+  {
+    "code": "agriculture",
+    "name": "Agriculture",
+    "sector": "Agriculture",
+    "is_category": true,
+    "description": "Crop production and allied farm work.",
+    "aliases": [
+      {"alias": "farming", "language": "en"},
+      {"alias": "agriculture", "language": "en"},
+      {"alias": "agricultural work", "language": "en"},
+      {"alias": "kheti", "language": "en"},
+      {"alias": "खेती", "language": "hi"},
+      {"alias": "कृषि", "language": "hi"},
+      {"alias": "விவசாயம்", "language": "ta"},
+      {"alias": "వ్యవసాయం", "language": "te"},
+      {"alias": "शेती", "language": "mr"},
+      {"alias": "কৃষি", "language": "bn"}
+    ]
+  },
+  {
+    "code": "crop_cultivation",
+    "name": "Crop cultivation",
+    "sector": "Agriculture",
+    "parent": "agriculture",
+    "description": "Sowing, nutrient management and harvesting of field crops.",
+    "aliases": [
+      {"alias": "crop growing", "language": "en"},
+      {"alias": "sowing", "language": "en"},
+      {"alias": "फसल", "language": "hi"},
+      {"alias": "பயிர் சாகுபடி", "language": "ta"}
+    ]
+  },
+  {
+    "code": "irrigation_operation",
+    "name": "Irrigation operation",
+    "sector": "Agriculture",
+    "parent": "agriculture",
+    "description": "Running and scheduling irrigation systems including pump sets and drip lines.",
+    "aliases": [
+      {"alias": "irrigation", "language": "en"},
+      {"alias": "watering", "language": "en"},
+      {"alias": "drip irrigation", "language": "en"},
+      {"alias": "सिंचाई", "language": "hi"},
+      {"alias": "பாசனம்", "language": "ta"},
+      {"alias": "सिंचन", "language": "mr"}
+    ]
+  },
+  {
+    "code": "farm_machinery",
+    "name": "Farm machinery",
+    "sector": "Agriculture",
+    "parent": "agriculture",
+    "is_category": true,
+    "description": "Operating and caring for tractors, tillers, harvesters and implements.",
+    "aliases": [
+      {"alias": "farm machinery", "language": "en"},
+      {"alias": "agricultural machinery", "language": "en"},
+      {"alias": "farm equipment", "language": "en"},
+      {"alias": "machine work", "language": "en"},
+      {"alias": "कृषि यंत्र", "language": "hi"},
+      {"alias": "मशीन", "language": "hi"},
+      {"alias": "பண்ணை இயந்திரம்", "language": "ta"},
+      {"alias": "शेती अवजारे", "language": "mr"}
+    ]
+  },
+  {
+    "code": "farm_machinery_maintenance",
+    "name": "Farm machinery maintenance",
+    "sector": "Agriculture",
+    "parent": "farm_machinery",
+    "description": "Routine servicing, lubrication and part replacement on agricultural equipment.",
+    "aliases": [
+      {"alias": "machinery maintenance", "language": "en"},
+      {"alias": "equipment maintenance", "language": "en"},
+      {"alias": "machine servicing", "language": "en"},
+      {"alias": "tractor servicing", "language": "en"},
+      {"alias": "farm machinery repair", "language": "en"},
+      {"alias": "machinery repair", "language": "en"},
+      {"alias": "machine repair", "language": "en"},
+      {"alias": "equipment repair", "language": "en"},
+      {"alias": "tractor repair", "language": "en"},
+      {"alias": "मशीन की देखभाल", "language": "hi"},
+      {"alias": "मशीन मरम्मत", "language": "hi"},
+      {"alias": "मशीन ठीक", "language": "hi"},
+      {"alias": "कृषि यंत्र मरम्मत", "language": "hi"},
+      {"alias": "मशीन दुरुस्ती", "language": "mr"},
+      {"alias": "இயந்திர பராமரிப்பு", "language": "ta"},
+      {"alias": "இயந்திர பழுது", "language": "ta"}
+    ]
+  },
+  {
+    "code": "tractor_operation",
+    "name": "Tractor operation",
+    "sector": "Agriculture",
+    "parent": "farm_machinery",
+    "description": "Safe operation of tractors and mounted implements.",
+    "aliases": [
+      {"alias": "tractor driving", "language": "en"},
+      {"alias": "tractor", "language": "en"},
+      {"alias": "ट्रैक्टर", "language": "hi"},
+      {"alias": "டிராக்டர்", "language": "ta"}
+    ]
+  },
+  {
+    "code": "harvester_operation",
+    "name": "Harvester operation",
+    "sector": "Agriculture",
+    "parent": "farm_machinery",
+    "description": "Operating combine harvesters and threshers.",
+    "aliases": [
+      {"alias": "harvester", "language": "en"},
+      {"alias": "thresher", "language": "en"},
+      {"alias": "हार्वेस्टर", "language": "hi"}
+    ]
+  },
+  {
+    "code": "pest_management",
+    "name": "Pest and disease management",
+    "sector": "Agriculture",
+    "parent": "agriculture",
+    "description": "Identifying crop pests and applying control measures safely.",
+    "aliases": [
+      {"alias": "spraying", "language": "en"},
+      {"alias": "pesticide", "language": "en"},
+      {"alias": "कीट नियंत्रण", "language": "hi"}
+    ]
+  },
+  {
+    "code": "dairy_livestock",
+    "name": "Dairy and livestock care",
+    "sector": "Agriculture",
+    "parent": "agriculture",
+    "description": "Care, feeding and milking of livestock.",
+    "aliases": [
+      {"alias": "dairy", "language": "en"},
+      {"alias": "cattle", "language": "en"},
+      {"alias": "milking", "language": "en"},
+      {"alias": "पशुपालन", "language": "hi"},
+      {"alias": "डेयरी", "language": "hi"}
+    ]
+  },
+
+  {
+    "code": "mechanical",
+    "name": "Mechanical work",
+    "sector": "Engineering",
+    "is_category": true,
+    "description": "Hands-on work with machines, engines and mechanical assemblies.",
+    "aliases": [
+      {"alias": "mechanical", "language": "en"},
+      {"alias": "mechanic work", "language": "en"},
+      {"alias": "machine work", "language": "en"},
+      {"alias": "मशीन का काम", "language": "hi"},
+      {"alias": "मैकेनिक", "language": "hi"},
+      {"alias": "மெக்கானிக்", "language": "ta"},
+      {"alias": "यांत्रिक", "language": "mr"}
+    ]
+  },
+  {
+    "code": "pump_repair",
+    "name": "Pump repair",
+    "sector": "Engineering",
+    "parent": "mechanical",
+    "description": "Diagnosing and repairing centrifugal, submersible and monoblock pump sets.",
+    "aliases": [
+      {"alias": "pump repair", "language": "en"},
+      {"alias": "pump repairing", "language": "en"},
+      {"alias": "pumpset repair", "language": "en"},
+      {"alias": "pump servicing", "language": "en"},
+      {"alias": "pump fitting", "language": "en"},
+      {"alias": "pump set", "language": "en"},
+      {"alias": "बोरवेल पंप", "language": "hi"},
+      {"alias": "पंप का काम", "language": "hi"},
+      {"alias": "borewell pump", "language": "en"},
+      {"alias": "water pump", "language": "en"},
+      {"alias": "motor pump", "language": "en"},
+      {"alias": "पंप मरम्मत", "language": "hi"},
+      {"alias": "पंप ठीक", "language": "hi"},
+      {"alias": "पंप रिपेयर", "language": "hi"},
+      {"alias": "பம்ப் பழுது", "language": "ta"},
+      {"alias": "பம்ப் ரிப்பேர்", "language": "ta"},
+      {"alias": "పంపు మరమ్మతు", "language": "te"},
+      {"alias": "पंप दुरुस्ती", "language": "mr"}
+    ]
+  },
+  {
+    "code": "engine_maintenance",
+    "name": "Engine maintenance",
+    "sector": "Engineering",
+    "parent": "mechanical",
+    "description": "Servicing and overhauling small diesel and petrol engines.",
+    "aliases": [
+      {"alias": "engine repair", "language": "en"},
+      {"alias": "diesel engine", "language": "en"},
+      {"alias": "इंजन", "language": "hi"},
+      {"alias": "என்ஜின்", "language": "ta"}
+    ]
+  },
+  {
+    "code": "diagnostics_troubleshooting",
+    "name": "Fault diagnostics",
+    "sector": "Engineering",
+    "parent": "mechanical",
+    "description": "Systematically locating the cause of a machine fault using symptoms and instruments.",
+    "aliases": [
+      {"alias": "diagnostics", "language": "en"},
+      {"alias": "troubleshooting", "language": "en"},
+      {"alias": "fault finding", "language": "en"},
+      {"alias": "खराबी पहचान", "language": "hi"}
+    ]
+  },
+  {
+    "code": "welding",
+    "name": "Welding and fabrication",
+    "sector": "Engineering",
+    "parent": "mechanical",
+    "description": "Arc and gas welding for repair and fabrication.",
+    "aliases": [
+      {"alias": "welding", "language": "en"},
+      {"alias": "welder", "language": "en"},
+      {"alias": "वेल्डिंग", "language": "hi"},
+      {"alias": "வெல்டிங்", "language": "ta"}
+    ]
+  },
+  {
+    "code": "fitting_assembly",
+    "name": "Fitting and assembly",
+    "sector": "Engineering",
+    "parent": "mechanical",
+    "description": "Assembling and aligning mechanical components to specification.",
+    "aliases": [
+      {"alias": "fitter", "language": "en"},
+      {"alias": "fitting", "language": "en"},
+      {"alias": "assembly", "language": "en"},
+      {"alias": "फिटर", "language": "hi"}
+    ]
+  },
+  {
+    "code": "hydraulics_basics",
+    "name": "Hydraulics fundamentals",
+    "sector": "Engineering",
+    "parent": "mechanical",
+    "description": "Principles and servicing of hydraulic circuits on farm implements.",
+    "aliases": [
+      {"alias": "hydraulics", "language": "en"},
+      {"alias": "हाइड्रोलिक", "language": "hi"}
+    ]
+  },
+  {
+    "code": "tool_handling",
+    "name": "Hand and power tool handling",
+    "sector": "Engineering",
+    "parent": "mechanical",
+    "description": "Correct selection and safe use of hand and power tools.",
+    "aliases": [
+      {"alias": "tools", "language": "en"},
+      {"alias": "tool handling", "language": "en"},
+      {"alias": "औजार", "language": "hi"}
+    ]
+  },
+  {
+    "code": "precision_measurement",
+    "name": "Measurement and testing",
+    "sector": "Engineering",
+    "parent": "mechanical",
+    "description": "Using gauges and meters to verify that a repair meets specification.",
+    "aliases": [
+      {"alias": "testing", "language": "en"},
+      {"alias": "measurement", "language": "en"},
+      {"alias": "calibration", "language": "en"},
+      {"alias": "जांच", "language": "hi"}
+    ]
+  },
+  {
+    "code": "two_wheeler_service",
+    "name": "Two-wheeler servicing",
+    "sector": "Automotive",
+    "parent": "mechanical",
+    "description": "Routine service and repair of motorcycles and scooters.",
+    "aliases": [
+      {"alias": "bike repair", "language": "en"},
+      {"alias": "two wheeler", "language": "en"},
+      {"alias": "बाइक मरम्मत", "language": "hi"}
+    ]
+  },
+
+  {
+    "code": "electrical",
+    "name": "Electrical work",
+    "sector": "Engineering",
+    "is_category": true,
+    "description": "Wiring, motors and electrical control of equipment.",
+    "aliases": [
+      {"alias": "electrical", "language": "en"},
+      {"alias": "electrician", "language": "en"},
+      {"alias": "बिजली का काम", "language": "hi"},
+      {"alias": "மின் வேலை", "language": "ta"}
+    ]
+  },
+  {
+    "code": "wiring_basics",
+    "name": "Basic wiring",
+    "sector": "Engineering",
+    "parent": "electrical",
+    "description": "Single and three phase wiring for motors and pump starters.",
+    "aliases": [
+      {"alias": "wiring", "language": "en"},
+      {"alias": "वायरिंग", "language": "hi"}
+    ]
+  },
+  {
+    "code": "motor_rewinding",
+    "name": "Motor rewinding",
+    "sector": "Engineering",
+    "parent": "electrical",
+    "description": "Rewinding and testing of single and three phase motors.",
+    "aliases": [
+      {"alias": "rewinding", "language": "en"},
+      {"alias": "motor winding", "language": "en"},
+      {"alias": "मोटर वाइंडिंग", "language": "hi"}
+    ]
+  },
+  {
+    "code": "solar_pump_installation",
+    "name": "Solar pump installation",
+    "sector": "Renewable Energy",
+    "parent": "electrical",
+    "description": "Installing and commissioning solar powered pumping systems.",
+    "aliases": [
+      {"alias": "solar pump", "language": "en"},
+      {"alias": "solar panel", "language": "en"},
+      {"alias": "सोलर पंप", "language": "hi"}
+    ]
+  },
+
+  {
+    "code": "safety",
+    "name": "Workplace safety",
+    "sector": "Cross-sector",
+    "is_category": true,
+    "description": "Working without harm to self or others.",
+    "aliases": [
+      {"alias": "safety", "language": "en"},
+      {"alias": "सुरक्षा", "language": "hi"},
+      {"alias": "பாதுகாப்பு", "language": "ta"}
+    ]
+  },
+  {
+    "code": "workplace_safety",
+    "name": "Workplace health and safety",
+    "sector": "Cross-sector",
+    "parent": "safety",
+    "description": "Hazard identification, safe work practice and emergency response.",
+    "aliases": [
+      {"alias": "workplace safety", "language": "en"},
+      {"alias": "first aid", "language": "en"},
+      {"alias": "कार्यस्थल सुरक्षा", "language": "hi"}
+    ]
+  },
+  {
+    "code": "ppe_usage",
+    "name": "Personal protective equipment use",
+    "sector": "Cross-sector",
+    "parent": "safety",
+    "description": "Correct selection and use of protective equipment.",
+    "aliases": [
+      {"alias": "ppe", "language": "en"},
+      {"alias": "safety gear", "language": "en"}
+    ]
+  },
+  {
+    "code": "electrical_safety",
+    "name": "Electrical safety",
+    "sector": "Cross-sector",
+    "parent": "safety",
+    "description": "Isolation, earthing and safe working around live equipment.",
+    "aliases": [
+      {"alias": "electrical safety", "language": "en"},
+      {"alias": "बिजली सुरक्षा", "language": "hi"}
+    ]
+  },
+
+  {
+    "code": "enterprise",
+    "name": "Running a small business",
+    "sector": "Cross-sector",
+    "is_category": true,
+    "description": "Skills needed to run a small service enterprise.",
+    "aliases": [
+      {"alias": "business", "language": "en"},
+      {"alias": "self employment", "language": "en"},
+      {"alias": "own shop", "language": "en"},
+      {"alias": "अपना काम", "language": "hi"},
+      {"alias": "व्यवसाय", "language": "hi"},
+      {"alias": "சொந்த தொழில்", "language": "ta"}
+    ]
+  },
+  {
+    "code": "customer_handling",
+    "name": "Customer handling",
+    "sector": "Cross-sector",
+    "parent": "enterprise",
+    "description": "Receiving work, setting expectations and handling complaints.",
+    "aliases": [
+      {"alias": "customer service", "language": "en"},
+      {"alias": "ग्राहक सेवा", "language": "hi"}
+    ]
+  },
+  {
+    "code": "basic_bookkeeping",
+    "name": "Basic bookkeeping",
+    "sector": "Cross-sector",
+    "parent": "enterprise",
+    "description": "Recording income, expenses and dues for a small business.",
+    "aliases": [
+      {"alias": "accounts", "language": "en"},
+      {"alias": "bookkeeping", "language": "en"},
+      {"alias": "हिसाब", "language": "hi"}
+    ]
+  },
+  {
+    "code": "pricing_estimation",
+    "name": "Job estimation and pricing",
+    "sector": "Cross-sector",
+    "parent": "enterprise",
+    "description": "Estimating labour and parts cost and quoting a fair price.",
+    "aliases": [
+      {"alias": "estimation", "language": "en"},
+      {"alias": "quotation", "language": "en"},
+      {"alias": "pricing", "language": "en"}
+    ]
+  },
+  {
+    "code": "inventory_management",
+    "name": "Spares and inventory management",
+    "sector": "Cross-sector",
+    "parent": "enterprise",
+    "description": "Stocking, tracking and reordering spare parts.",
+    "aliases": [
+      {"alias": "inventory", "language": "en"},
+      {"alias": "stock", "language": "en"},
+      {"alias": "spares", "language": "en"}
+    ]
+  },
+  {
+    "code": "digital_payments",
+    "name": "Digital payments",
+    "sector": "Cross-sector",
+    "parent": "enterprise",
+    "description": "Accepting and reconciling digital payments.",
+    "aliases": [
+      {"alias": "upi", "language": "en"},
+      {"alias": "online payment", "language": "en"},
+      {"alias": "डिजिटल भुगतान", "language": "hi"}
+    ]
+  },
+  {
+    "code": "record_keeping",
+    "name": "Record keeping",
+    "sector": "Cross-sector",
+    "parent": "enterprise",
+    "description": "Maintaining service records and job cards.",
+    "aliases": [
+      {"alias": "records", "language": "en"},
+      {"alias": "job card", "language": "en"}
+    ]
+  },
+
+  {
+    "code": "tailoring",
+    "name": "Tailoring",
+    "sector": "Apparel",
+    "is_category": false,
+    "description": "Garment stitching and alteration.",
+    "aliases": [
+      {"alias": "stitching", "language": "en"},
+      {"alias": "sewing", "language": "en"},
+      {"alias": "सिलाई", "language": "hi"},
+      {"alias": "தையல்", "language": "ta"}
+    ]
+  },
+  {
+    "code": "construction_masonry",
+    "name": "Masonry",
+    "sector": "Construction",
+    "is_category": false,
+    "description": "Brickwork, plastering and concreting.",
+    "aliases": [
+      {"alias": "mason", "language": "en"},
+      {"alias": "masonry", "language": "en"},
+      {"alias": "राजमिस्त्री", "language": "hi"}
+    ]
+  },
+  {
+    "code": "driving_lmv",
+    "name": "Light vehicle driving",
+    "sector": "Logistics",
+    "is_category": false,
+    "description": "Driving light motor vehicles.",
+    "aliases": [
+      {"alias": "driving", "language": "en"},
+      {"alias": "driver", "language": "en"},
+      {"alias": "ड्राइविंग", "language": "hi"}
+    ]
+  }
+]

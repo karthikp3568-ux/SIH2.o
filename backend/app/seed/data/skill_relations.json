@@ -1,0 +1,22 @@
+[
+  {"from": "pump_repair", "to": "motor_rewinding", "relation": "transfers_to", "weight": 0.5},
+  {"from": "pump_repair", "to": "engine_maintenance", "relation": "related_to", "weight": 0.55},
+  {"from": "pump_repair", "to": "diagnostics_troubleshooting", "relation": "transfers_to", "weight": 0.45},
+  {"from": "pump_repair", "to": "irrigation_operation", "relation": "related_to", "weight": 0.5},
+  {"from": "pump_repair", "to": "wiring_basics", "relation": "related_to", "weight": 0.35},
+  {"from": "pump_repair", "to": "solar_pump_installation", "relation": "transfers_to", "weight": 0.45},
+  {"from": "farm_machinery_maintenance", "to": "engine_maintenance", "relation": "transfers_to", "weight": 0.6},
+  {"from": "farm_machinery_maintenance", "to": "diagnostics_troubleshooting", "relation": "transfers_to", "weight": 0.5},
+  {"from": "farm_machinery_maintenance", "to": "tool_handling", "relation": "transfers_to", "weight": 0.7},
+  {"from": "farm_machinery_maintenance", "to": "hydraulics_basics", "relation": "related_to", "weight": 0.4},
+  {"from": "tractor_operation", "to": "farm_machinery_maintenance", "relation": "related_to", "weight": 0.45},
+  {"from": "engine_maintenance", "to": "two_wheeler_service", "relation": "transfers_to", "weight": 0.5},
+  {"from": "welding", "to": "fitting_assembly", "relation": "related_to", "weight": 0.45},
+  {"from": "irrigation_operation", "to": "solar_pump_installation", "relation": "related_to", "weight": 0.4},
+  {"from": "agriculture", "to": "farm_machinery", "relation": "related_to", "weight": 0.5},
+  {"from": "tool_handling", "to": "precision_measurement", "relation": "prerequisite_of", "weight": 0.4},
+  {"from": "workplace_safety", "to": "electrical_safety", "relation": "related_to", "weight": 0.5},
+  {"from": "customer_handling", "to": "record_keeping", "relation": "related_to", "weight": 0.4},
+  {"from": "basic_bookkeeping", "to": "pricing_estimation", "relation": "related_to", "weight": 0.5},
+  {"from": "basic_bookkeeping", "to": "digital_payments", "relation": "related_to", "weight": 0.45}
+]

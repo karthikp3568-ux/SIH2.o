@@ -1,0 +1,59 @@
+# Local container setup.
+#
+# By default this runs the whole prototype on SQLite with no external service,
+# matching the "works offline" promise. Uncomment the `db` service and the
+# DATABASE_URL line to run against PostgreSQL with PostGIS and pgvector, which
+# is the intended production path.
+
+services:
+  backend:
+    build:
+      context: ./backend
+    environment:
+      ENVIRONMENT: development
+      DEBUG: "true"
+      # Generate a real one for anything beyond local use:
+      #   python -c "import secrets; print(secrets.token_urlsafe(48))"
+      SECRET_KEY: dev-only-insecure-change-me-0123456789abcdef
+      DATABASE_URL: sqlite:////app/var/livelihood_navigator.db
+      # DATABASE_URL: postgresql+psycopg://navigator:navigator@db:5432/navigator
+      CORS_ORIGINS: http://localhost:5173,http://localhost:8080
+      SEED_ON_STARTUP: "true"
+      DEMO_MODE: "true"
+    volumes:
+      - backend-data:/app/var
+    ports:
+      - "8000:8000"
+    # depends_on:
+    #   db:
+    #     condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+  # Uncomment for the PostgreSQL path. The image ships PostGIS; pgvector is
+  # installed by the init script below.
+  # db:
+  #   image: postgis/postgis:16-3.4
+  #   environment:
+  #     POSTGRES_USER: navigator
+  #     POSTGRES_PASSWORD: navigator
+  #     POSTGRES_DB: navigator
+  #   volumes:
+  #     - db-data:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U navigator"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 10
+  #   ports:
+  #     - "5432:5432"
+
+volumes:
+  backend-data:
+  # db-data:

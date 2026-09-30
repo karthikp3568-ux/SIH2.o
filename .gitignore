@@ -1,0 +1,37 @@
+# --- secrets: never commit a real environment file ---
+.env
+.env.*
+!.env.example
+
+# --- python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- databases and runtime artefacts ---
+*.db
+*.db-wal
+*.db-shm
+*.sqlite3
+backend/var/
+backend/livelihood_navigator.db*
+
+# --- node / frontend ---
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.local
+
+# --- editors and OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp

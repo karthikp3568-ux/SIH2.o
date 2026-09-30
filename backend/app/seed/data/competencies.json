@@ -1,0 +1,238 @@
+[
+  {
+    "code": "AGR/N1101",
+    "name": "Carry out routine maintenance of agricultural equipment",
+    "nos_code": "AGR/N1101",
+    "sector": "Agriculture",
+    "nsqf_level": 3,
+    "description": "Perform scheduled servicing, lubrication, cleaning and minor part replacement on farm equipment so that it stays fit for use.",
+    "skills": [
+      {"code": "farm_machinery_maintenance", "coverage": 0.85},
+      {"code": "tool_handling", "coverage": 0.4}
+    ]
+  },
+  {
+    "code": "AGR/N1102",
+    "name": "Diagnose faults in agricultural machinery",
+    "nos_code": "AGR/N1102",
+    "sector": "Agriculture",
+    "nsqf_level": 4,
+    "description": "Use symptoms, inspection and test instruments to isolate the root cause of a machinery fault before repair.",
+    "skills": [
+      {"code": "diagnostics_troubleshooting", "coverage": 0.9},
+      {"code": "precision_measurement", "coverage": 0.35}
+    ]
+  },
+  {
+    "code": "AGR/N1103",
+    "name": "Repair pumps and irrigation equipment",
+    "nos_code": "AGR/N1103",
+    "sector": "Agriculture",
+    "nsqf_level": 3,
+    "description": "Dismantle, repair, reassemble and refit pump sets and irrigation components.",
+    "skills": [
+      {"code": "pump_repair", "coverage": 1.0},
+      {"code": "irrigation_operation", "coverage": 0.35}
+    ]
+  },
+  {
+    "code": "AGR/N1104",
+    "name": "Test and commission repaired equipment",
+    "nos_code": "AGR/N1104",
+    "sector": "Agriculture",
+    "nsqf_level": 4,
+    "description": "Verify that repaired equipment meets performance specification using appropriate measurement, and hand it back safely.",
+    "skills": [
+      {"code": "precision_measurement", "coverage": 0.8},
+      {"code": "diagnostics_troubleshooting", "coverage": 0.3}
+    ]
+  },
+  {
+    "code": "AGR/N1105",
+    "name": "Carry out advanced repair of engines and power transmission",
+    "nos_code": "AGR/N1105",
+    "sector": "Agriculture",
+    "nsqf_level": 4,
+    "description": "Overhaul small engines, clutches and drive assemblies used on farm equipment.",
+    "skills": [
+      {"code": "engine_maintenance", "coverage": 0.85},
+      {"code": "fitting_assembly", "coverage": 0.4}
+    ]
+  },
+  {
+    "code": "AGR/N1106",
+    "name": "Operate tractors and mounted implements safely",
+    "nos_code": "AGR/N1106",
+    "sector": "Agriculture",
+    "nsqf_level": 3,
+    "description": "Operate a tractor and attach, adjust and use mounted implements without risk to people or equipment.",
+    "skills": [
+      {"code": "tractor_operation", "coverage": 0.9},
+      {"code": "workplace_safety", "coverage": 0.3}
+    ]
+  },
+  {
+    "code": "AGR/N1107",
+    "name": "Operate irrigation systems",
+    "nos_code": "AGR/N1107",
+    "sector": "Agriculture",
+    "nsqf_level": 3,
+    "description": "Set up and run surface, sprinkler and drip irrigation systems to a schedule.",
+    "skills": [
+      {"code": "irrigation_operation", "coverage": 0.95}
+    ]
+  },
+  {
+    "code": "MEC/N1501",
+    "name": "Perform welding and fabrication for repair work",
+    "nos_code": "MEC/N1501",
+    "sector": "Engineering",
+    "nsqf_level": 3,
+    "description": "Carry out arc and gas welding to repair or fabricate mechanical parts.",
+    "skills": [
+      {"code": "welding", "coverage": 1.0}
+    ]
+  },
+  {
+    "code": "MEC/N1502",
+    "name": "Service hydraulic systems",
+    "nos_code": "MEC/N1502",
+    "sector": "Engineering",
+    "nsqf_level": 4,
+    "description": "Inspect, service and repair hydraulic circuits, cylinders and control valves.",
+    "skills": [
+      {"code": "hydraulics_basics", "coverage": 0.95},
+      {"code": "fitting_assembly", "coverage": 0.3}
+    ]
+  },
+  {
+    "code": "MEC/N1503",
+    "name": "Assemble and align mechanical components",
+    "nos_code": "MEC/N1503",
+    "sector": "Engineering",
+    "nsqf_level": 3,
+    "description": "Fit, align and secure mechanical assemblies to drawing or specification.",
+    "skills": [
+      {"code": "fitting_assembly", "coverage": 0.9},
+      {"code": "precision_measurement", "coverage": 0.4}
+    ]
+  },
+  {
+    "code": "ELE/N1301",
+    "name": "Install and commission solar pumping systems",
+    "nos_code": "ELE/N1301",
+    "sector": "Renewable Energy",
+    "nsqf_level": 4,
+    "description": "Site, mount, wire and commission a solar powered pump set.",
+    "skills": [
+      {"code": "solar_pump_installation", "coverage": 0.95},
+      {"code": "wiring_basics", "coverage": 0.45}
+    ]
+  },
+  {
+    "code": "ELE/N1302",
+    "name": "Work safely with electrical equipment",
+    "nos_code": "ELE/N1302",
+    "sector": "Cross-sector",
+    "nsqf_level": 3,
+    "description": "Isolate, earth and safely work on electrically powered equipment.",
+    "skills": [
+      {"code": "electrical_safety", "coverage": 1.0},
+      {"code": "wiring_basics", "coverage": 0.3}
+    ]
+  },
+  {
+    "code": "ELE/N1303",
+    "name": "Rewind and test electric motors",
+    "nos_code": "ELE/N1303",
+    "sector": "Engineering",
+    "nsqf_level": 4,
+    "description": "Strip, rewind, varnish and test single and three phase motors.",
+    "skills": [
+      {"code": "motor_rewinding", "coverage": 0.95}
+    ]
+  },
+  {
+    "code": "GEN/N1201",
+    "name": "Maintain workplace health and safety",
+    "nos_code": "GEN/N1201",
+    "sector": "Cross-sector",
+    "nsqf_level": 3,
+    "description": "Identify hazards, use protective equipment and respond correctly to workplace incidents.",
+    "skills": [
+      {"code": "workplace_safety", "coverage": 0.9},
+      {"code": "ppe_usage", "coverage": 0.6}
+    ]
+  },
+  {
+    "code": "GEN/N1202",
+    "name": "Interact with customers and maintain service records",
+    "nos_code": "GEN/N1202",
+    "sector": "Cross-sector",
+    "nsqf_level": 3,
+    "description": "Receive work politely, explain the job and cost, and keep accurate service records.",
+    "skills": [
+      {"code": "customer_handling", "coverage": 0.85},
+      {"code": "record_keeping", "coverage": 0.5}
+    ]
+  },
+  {
+    "code": "BUS/N1401",
+    "name": "Plan and price a small service enterprise",
+    "nos_code": "BUS/N1401",
+    "sector": "Cross-sector",
+    "nsqf_level": 5,
+    "description": "Work out costs, set prices and plan the working capital a small repair business needs.",
+    "skills": [
+      {"code": "pricing_estimation", "coverage": 0.85},
+      {"code": "basic_bookkeeping", "coverage": 0.5}
+    ]
+  },
+  {
+    "code": "BUS/N1402",
+    "name": "Manage spares and inventory",
+    "nos_code": "BUS/N1402",
+    "sector": "Cross-sector",
+    "nsqf_level": 4,
+    "description": "Decide what spares to stock, track them and reorder before running out.",
+    "skills": [
+      {"code": "inventory_management", "coverage": 0.95}
+    ]
+  },
+  {
+    "code": "BUS/N1403",
+    "name": "Handle payments and maintain accounts",
+    "nos_code": "BUS/N1403",
+    "sector": "Cross-sector",
+    "nsqf_level": 4,
+    "description": "Accept cash and digital payments, record them and reconcile daily takings.",
+    "skills": [
+      {"code": "digital_payments", "coverage": 0.8},
+      {"code": "basic_bookkeeping", "coverage": 0.7}
+    ]
+  },
+  {
+    "code": "AUT/N1601",
+    "name": "Service two-wheeler engines and transmissions",
+    "nos_code": "AUT/N1601",
+    "sector": "Automotive",
+    "nsqf_level": 3,
+    "description": "Carry out periodic service and minor repair on motorcycles and scooters.",
+    "skills": [
+      {"code": "two_wheeler_service", "coverage": 0.9},
+      {"code": "engine_maintenance", "coverage": 0.4}
+    ]
+  },
+  {
+    "code": "AGR/N0901",
+    "name": "Operate and attend a pump set (superseded)",
+    "nos_code": "AGR/N0901",
+    "sector": "Agriculture",
+    "nsqf_level": 2,
+    "status": "retired",
+    "description": "Legacy standard covering basic pump operation. Superseded by AGR/N1103.",
+    "skills": [
+      {"code": "irrigation_operation", "coverage": 0.6}
+    ]
+  }
+]

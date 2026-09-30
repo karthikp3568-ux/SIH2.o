@@ -1,0 +1,56 @@
+[
+  {
+    "title": "What NSQF levels mean in practice",
+    "doc_type": "guidance",
+    "source": "Prototype guidance content authored for this application",
+    "language": "en",
+    "sector": "Cross-sector",
+    "text": "The National Skills Qualifications Framework places a qualification on a level that describes how much responsibility and independent judgement the work involves. A level 3 qualification usually covers well defined tasks done to instruction. A level 4 qualification expects the worker to diagnose problems, choose a method and take responsibility for the result. A level 5 qualification adds planning, costing and supervising others. Moving up one level is normally realistic after completing the level below and getting real work experience; jumping two levels at once is not. When a pathway sits one level above a person's current work, the training length is usually a few months rather than a year.",
+    "metadata": {"topic": "nsqf", "audience": "beneficiary"}
+  },
+  {
+    "title": "What an apprenticeship involves and how it differs from a job",
+    "doc_type": "guidance",
+    "source": "Prototype guidance content authored for this application",
+    "language": "en",
+    "sector": "Cross-sector",
+    "text": "An apprenticeship is paid work that is also structured learning. The apprentice is rotated through different parts of the trade under a qualified worker, and there is usually an assessment at the end that produces a recognised certificate. The stipend during an apprenticeship is normally lower than a full wage for the same trade, because part of the value is the training. An apprenticeship suits someone who has practical experience but no certificate, because the certificate is what lets them charge more or be hired formally later. It requires regular attendance at a fixed workplace, so it is a poor fit for someone who cannot travel daily.",
+    "metadata": {"topic": "apprenticeship", "audience": "beneficiary"}
+  },
+  {
+    "title": "Steps to formalise an informal village repair service",
+    "doc_type": "guidance",
+    "source": "Prototype guidance content authored for this application",
+    "language": "en",
+    "sector": "Agriculture",
+    "text": "Many rural workers already repair pumps and machinery informally for neighbours without calling it a business. Turning that into a stable livelihood usually follows four steps. First, get the technical skill certified, because a certificate is what allows a higher rate and access to dealer work. Second, learn to estimate a job and quote a price that covers parts, travel and labour, rather than charging whatever is offered. Third, stock a small set of fast moving spares so a repair can be finished the same day. Fourth, keep a simple written record of every job with the customer name, the fault and the amount, because that record is what evidences income if a loan or a dealer tie-up is applied for later. Formalising does not require giving up farm work; most village repair services run alongside cultivation.",
+    "metadata": {"topic": "enterprise", "audience": "beneficiary"}
+  },
+  {
+    "title": "Why self reported skill and certified skill are treated differently",
+    "doc_type": "guidance",
+    "source": "Prototype guidance content authored for this application",
+    "language": "en",
+    "sector": "Cross-sector",
+    "text": "Saying you can repair a pump and holding an assessed certificate that says so are not the same thing, and this system keeps them apart on purpose. A self reported skill is real and is counted when matching pathways, because practical experience is genuine competence. But an employer or a training centre cannot verify it, so it does not satisfy an eligibility requirement that asks for certification. The practical consequence is that experience shortens training rather than replacing it: an experienced pump repairer entering an equipment technician course already covers part of the syllabus, and the gap is usually in diagnosis, testing, safety and the parts of the trade that were never learned formally.",
+    "metadata": {"topic": "verification", "audience": "beneficiary"}
+  },
+  {
+    "title": "How travel distance affects whether a pathway actually works",
+    "doc_type": "guidance",
+    "source": "Prototype guidance content authored for this application",
+    "language": "en",
+    "sector": "Cross-sector",
+    "text": "A training course or job that is technically a good match will not produce a livelihood if the person cannot reach it. Daily travel of more than about an hour each way is a common reason people drop out of training, especially where the work is seasonal and travel has to be paid for out of pocket. For someone who cannot travel far, a slightly less specialised option nearby is usually a better outcome than a strong match that is a district away. Where a distant option is genuinely much better, the realistic question is whether accommodation is offered, whether the stipend covers travel, and whether family circumstances allow being away. Those are decisions for the person, not for a matching system.",
+    "metadata": {"topic": "mobility", "audience": "beneficiary"}
+  },
+  {
+    "title": "What to check before enrolling in any training programme",
+    "doc_type": "guidance",
+    "source": "Prototype guidance content authored for this application",
+    "language": "en",
+    "sector": "Cross-sector",
+    "text": "Before enrolling, confirm five things directly with the training centre, because listings go out of date. Confirm that the batch is actually running and on what date. Confirm the total fee and what it includes, and get any fee support in writing rather than as a verbal assurance. Confirm which assessment and certificate the course leads to, and which body issues it. Confirm the daily timing and the total duration, and check it against your own work season. Finally, ask what placement or enterprise support follows completion, and ask for the contact details of one or two people who finished an earlier batch. A centre that cannot answer these questions clearly is a reason to be cautious.",
+    "metadata": {"topic": "enrolment", "audience": "beneficiary"}
+  }
+]
