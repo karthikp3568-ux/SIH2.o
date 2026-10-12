@@ -2,10 +2,11 @@
  * Landing screen.
  *
  * One primary action — start talking — with typing as an equal second path.
- * The orb here is idle (it breathes); it only reacts to sound once the
- * conversation screen is actually listening.
+ * Interactive rotating conversational ticker, multi-sector career badges,
+ * and dual interactive demo tracks (Rural Tech / Software Engineer).
  */
 
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { api } from '../api/client'
@@ -38,11 +39,26 @@ const PROMISES: { icon: IconName; title: string; body: string }[] = [
 ]
 
 const JOURNEY: { icon: IconName; title: string; body: string }[] = [
-  { icon: 'mic', title: 'Voice', body: 'Say what you do, in your language' },
-  { icon: 'user', title: 'Profile', body: 'Check what we understood' },
-  { icon: 'graph', title: 'Skill gap', body: 'See what you have, and what’s next' },
-  { icon: 'route', title: 'Pathway', body: 'Verified training and work nearby' },
-  { icon: 'sprout', title: 'Livelihood', body: 'Follow through, step by step' },
+  { icon: 'mic', title: 'Voice Intake', body: 'Say what you do or want to do, in your language' },
+  { icon: 'user', title: 'Smart Profile', body: 'Check facts and verified skills' },
+  { icon: 'graph', title: 'Skill Gap', body: 'See what you have, and what’s next' },
+  { icon: 'route', title: 'Pathways', body: 'Verified training, jobs & apprenticeships' },
+  { icon: 'sprout', title: 'Livelihood', body: 'Track step-by-step progress & wage growth' },
+]
+
+const QUOTES = [
+  { text: '“I want to become a software engineer, I know Python and Java…”', field: 'Software & IT' },
+  { text: '“I work on my farm and know how to repair irrigation pumps…”', field: 'Agriculture & Machinery' },
+  { text: '“I know AutoCAD drafting and want a mechanical engineering job…”', field: 'CAD & Design' },
+  { text: '“I do computer hardware troubleshooting and network setup…”', field: 'IT Operations' },
+]
+
+const CAREER_TRACKS = [
+  { icon: 'code', label: 'Software & Python' },
+  { icon: 'wrench', label: 'Machinery & Electrical' },
+  { icon: 'sprout', label: 'AgTech & Farming' },
+  { icon: 'briefcase', label: 'IT Support & Helpdesk' },
+  { icon: 'chart', label: 'CAD & Engineering' },
 ]
 
 export function Welcome() {
@@ -50,6 +66,15 @@ export function Welcome() {
   const navigate = useNavigate()
   const status = useAsync(() => api.status(), [])
   const demoMode = status.data?.demo_mode ?? false
+
+  const [quoteIndex, setQuoteIndex] = useState(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setQuoteIndex((prev) => (prev + 1) % QUOTES.length)
+    }, 3800)
+    return () => clearInterval(timer)
+  }, [])
 
   const demo = useAction(async (mode: 'voice' | 'text' | 'guided') => {
     const session = await api.demoReset()
@@ -75,14 +100,22 @@ export function Welcome() {
   )
   const others = languages.filter((l) => !FEATURED_LANGUAGES.includes(l.code))
 
+  const currentQuote = QUOTES[quoteIndex]
+
   return (
     <Layout bare>
       <section className="hero">
         <div className="container hero__inner">
           <div className="hero__copy enter">
-            <span className="eyebrow">
-              <span className="hero__dot" aria-hidden="true" /> Que Sera · Livelihood Navigator
-            </span>
+            <div className="hero__badge-row">
+              <span className="eyebrow">
+                <span className="hero__dot" aria-hidden="true" /> Smart India Hackathon · SIH26097
+              </span>
+              <span className="hero__live-pill">
+                <Icon name="sparkle" size={12} /> AI Multilingual Intake
+              </span>
+            </div>
+
             <h1 className="hero__title">{t('welcome.hero')}</h1>
             <p className="hero__lead">{t('welcome.subtitle')}</p>
 
@@ -94,17 +127,33 @@ export function Welcome() {
                 {t('welcome.type')}
               </Button>
             </div>
+
             {demo.error ? (
               <p className="small" role="alert" style={{ color: 'var(--red-600)', marginTop: 12 }}>
                 We could not start right now. Please try again in a moment.
               </p>
             ) : null}
+
             {!isAuthenticated && demoMode ? (
               <p className="tiny muted" style={{ marginTop: 12 }}>
-                Demo mode: you will continue as the sample beneficiary, Ravi.
+                Quick Demo Mode active: test with ready profiles or speak freely.
               </p>
             ) : null}
 
+            {/* Career track badges */}
+            <div className="hero__tracks">
+              <span className="hero__tracks-title">Supported Career Sectors:</span>
+              <div className="hero__tracks-pills">
+                {CAREER_TRACKS.map((track) => (
+                  <span key={track.label} className="track-pill">
+                    <Icon name={track.icon} size={13} />
+                    {track.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Language Selection */}
             <div className="hero__langs" role="group" aria-label={t('welcome.language')}>
               {featured.map((option) => (
                 <button
@@ -143,14 +192,15 @@ export function Welcome() {
               onClick={() => start('voice')}
               aria-label={t('welcome.speak')}
             >
-              <VoiceOrb state="idle" size={340} label="Voice assistant, ready" />
+              <VoiceOrb state="idle" size={320} label="AI Voice assistant, ready to listen" />
               <span className="hero__orb-mic" aria-hidden="true">
-                <Icon name="mic" size={30} />
+                <Icon name="mic" size={28} />
               </span>
             </button>
-            <p className="hero__orb-caption">
-              “I work on my farm and sometimes repair water pumps…”
-            </p>
+            <div className="hero__quote-card">
+              <span className="hero__quote-tag">{currentQuote.field}</span>
+              <p className="hero__quote-text">{currentQuote.text}</p>
+            </div>
           </div>
         </div>
       </section>
@@ -173,21 +223,40 @@ export function Welcome() {
       </section>
 
       <section className="container landing-lower">
-        <div className="demo-card">
-          <div className="demo-card__person" aria-hidden="true">
-            R
+        <div className="demo-grid">
+          {/* Demo 1: Ravi (Machinery & Farm) */}
+          <div className="demo-card">
+            <div className="demo-card__person" aria-hidden="true">
+              R
+            </div>
+            <div className="grow">
+              <span className="eyebrow">Guided Profile 1</span>
+              <h3 style={{ margin: '4px 0 6px' }}>Ravi · Pump Mechanic</h3>
+              <p className="small muted" style={{ margin: 0 }}>
+                Machinery repair and farm equipment standard (NSQF Level 3/4) with local workshop listings.
+              </p>
+            </div>
+            <Button variant="dark" icon="play" onClick={() => demo.run('guided')} loading={demo.pending}>
+              {t('welcome.demo')}
+            </Button>
           </div>
-          <div className="grow">
-            <span className="eyebrow">Guided example</span>
-            <h3 style={{ margin: '4px 0 6px' }}>Follow Ravi’s journey</h3>
-            <p className="small muted" style={{ margin: 0 }}>
-              A farmer in Nashik who repairs pumps. Play his own words and watch the profile, skill
-              gap and pathways build from them.
-            </p>
+
+          {/* Demo 2: Tech Career (Python / Java / Web) */}
+          <div className="demo-card demo-card--tech">
+            <div className="demo-card__person demo-card__person--tech" aria-hidden="true">
+              <Icon name="code" size={24} />
+            </div>
+            <div className="grow">
+              <span className="eyebrow" style={{ color: 'var(--teal-700)' }}>Guided Profile 2</span>
+              <h3 style={{ margin: '4px 0 6px' }}>Software &amp; Coding Track</h3>
+              <p className="small muted" style={{ margin: 0 }}>
+                Python, Java &amp; Web development qualification pathways (NSQF Level 5) with IT opportunities.
+              </p>
+            </div>
+            <Button variant="secondary" icon="arrowRight" onClick={() => start('text')}>
+              Explore Tech Track
+            </Button>
           </div>
-          <Button variant="dark" icon="play" onClick={() => demo.run('guided')} loading={demo.pending}>
-            {t('welcome.demo')}
-          </Button>
         </div>
 
         <ul className="promises">
