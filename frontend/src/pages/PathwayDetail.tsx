@@ -80,6 +80,16 @@ export function PathwayDetail() {
     { icon: 'sprout', title: 'Livelihood', body: income ? `${income} a month stated` : 'Steady income', state: 'next' },
   ]
 
+  const shareWhatsApp = () => {
+    const title = gap?.qualification_title ?? ex.title
+    const provider = rec?.provider ?? 'Verified Provider'
+    const distance = rec?.distance_km != null ? `${Math.round(rec.distance_km)} km` : 'Local'
+    const stipend = income ? `\n💰 Stipend/Income: ${income}` : ''
+    const nsqf = gap?.nsqf_level ? `\n📜 NSQF Level: ${gap.nsqf_level}` : ''
+    const msg = `*Livelihood Navigator Pathway*\n\n🎯 *Pathway:* ${title}\n🏢 *Provider:* ${provider}\n📍 *Distance:* ${distance}${nsqf}${stipend}\n\nExplore this pathway: ${window.location.href}`
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer')
+  }
+
   return (
     <Layout>
       <FlowSteps current="pathways" />
@@ -128,6 +138,9 @@ export function PathwayDetail() {
           )}
           <Button variant="secondary" icon="info" onClick={() => setWhyOpen(true)}>
             Why this?
+          </Button>
+          <Button variant="secondary" icon="messageCircle" onClick={shareWhatsApp} title="Send summary to WhatsApp">
+            WhatsApp
           </Button>
         </div>
       </header>

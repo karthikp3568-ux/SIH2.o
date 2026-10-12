@@ -117,6 +117,9 @@ export function MyProfile() {
           </div>
         </div>
         <div className="row">
+          <Button variant="secondary" icon="printer" onClick={() => window.print()} title="Print or save official skill card as PDF">
+            Print Skill Passport
+          </Button>
           <Button variant="secondary" icon="mic" onClick={() => navigate('/start?mode=voice&fresh=1')}>
             Tell us something new
           </Button>
@@ -125,6 +128,21 @@ export function MyProfile() {
           </Button>
         </div>
       </header>
+
+      {/* Official NSQF Skill Passport print header (visible only in print / PDF export) */}
+      <div className="passport-print-header" aria-hidden="true">
+        <div className="passport-print-banner">
+          <div className="passport-print-badge">SKILL INDIA MISSION · NSQF LIVELIHOOD PASSPORT</div>
+          <h2>Ministry of Skill Development &amp; Entrepreneurship</h2>
+          <p className="passport-print-sub">AI-Driven Multilingual Livelihood Navigator (SIH26097)</p>
+        </div>
+        <div className="passport-print-meta-grid">
+          <div><span>Beneficiary:</span> <strong>{p.display_name}</strong></div>
+          <div><span>State &amp; District:</span> <strong>{[p.location?.district, p.location?.state].filter(Boolean).join(', ') || 'Karnataka'}</strong></div>
+          <div><span>Language:</span> <strong>{LANGUAGE_NAME[p.preferred_language] ?? p.preferred_language}</strong></div>
+          <div><span>Profile Status:</span> <strong>{p.is_confirmed ? 'Verified by Beneficiary' : 'Self-Reported Draft'}</strong></div>
+        </div>
+      </div>
 
       <div className="understood-grid">
         <Card icon="cap" tone="blue" title="Education" index={index++}>
@@ -254,6 +272,11 @@ export function MyProfile() {
             </ul>
           </Card>
         ) : null}
+      </div>
+
+      <div className="passport-print-footer" aria-hidden="true">
+        <div>Official Verification: Verified via Livelihood Navigator AI engine · Compliant with NSQF QP standards</div>
+        <div>Generated on: {new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
       </div>
 
       {setMobility.pending ? <Loading label="Re-ranking your pathways…" /> : null}

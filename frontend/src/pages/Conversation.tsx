@@ -79,7 +79,7 @@ export function Conversation() {
   const [clarifying, setClarifying] = useState(false)
   /** Server id of the low-confidence message awaiting confirmation. */
   const [pendingMessageId, setPendingMessageId] = useState<string | null>(null)
-  const [readAloud, setReadAloud] = useState(false)
+  const [readAloud, setReadAloud] = useState(mode !== 'text')
   const [script, setScript] = useState<{ text: string; note: string }[]>([])
   const [scriptStep, setScriptStep] = useState(0)
   const [playback, setPlayback] = useState<string | null>(null)

@@ -7,9 +7,9 @@
  * language regardless, because those questions come from the backend.
  */
 
-export type LanguageCode = 'en' | 'hi' | 'mr' | 'ta'
+export type LanguageCode = 'en' | 'hi' | 'mr' | 'ta' | 'kn' | 'te'
 
-export const UI_LANGUAGES: LanguageCode[] = ['en', 'hi', 'mr', 'ta']
+export const UI_LANGUAGES: LanguageCode[] = ['en', 'hi', 'mr', 'ta', 'kn', 'te']
 
 type Dictionary = Record<string, string>
 
@@ -370,7 +370,83 @@ const ta: Dictionary = {
   'common.retry': 'மீண்டும் முயற்சிக்கவும்',
 }
 
-const DICTIONARIES: Record<LanguageCode, Dictionary> = { en, hi, mr, ta }
+const kn: Dictionary = {
+  'app.name': 'ಲೈವ್ಲಿಹುಡ್ ನೇವಿಗೇಟರ್',
+  'app.tagline': 'ಕೌಶಲ್ಯದಿಂದ ತರಬೇತಿ, ತರಬೇತಿಯಿಂದ ಕೆಲಸ',
+  'welcome.title': 'ನೀವು ಯಾವ ಕೆಲಸ ಮಾಡಲು ಬಯಸುತ್ತೀರಿ ಎಂದು ತಿಳಿಸಿ.',
+  'welcome.hero': 'ನಿಮ್ಮ ಕೌಶಲ್ಯಕ್ಕೆ ಸೂಕ್ತವಾದ ಮಾರ್ಗವನ್ನು ಕಂಡುಕೊಳ್ಳಿ.',
+  'welcome.subtitle': 'ಸಹಜವಾಗಿ ಮಾತನಾಡಿ. ನಿಮ್ಮ ಕೌಶಲ್ಯಗಳನ್ನು ಸೂಕ್ತ ತರಬೇತಿ ಮತ್ತು ಕೆಲಸಕ್ಕೆ ನಾವು ಜೋಡಿಸುತ್ತೇವೆ.',
+  'welcome.speak': 'ಮಾತನಾಡಿ',
+  'welcome.type': 'ಟೈಪ್ ಮಾಡಿ',
+  'welcome.demo': 'ರವಿ ಡೆಮೊ ನೋಡಿ',
+  'welcome.language': 'ನಿಮ್ಮ ಭಾಷೆ ಆಯ್ಕೆಮಾಡಿ',
+  'welcome.how': 'ಇದು ಹೇಗೆ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತದೆ',
+  'welcome.step1': 'ನಿಮ್ಮ ಕೆಲಸದ ಬಗ್ಗೆ ಮಾತನಾಡಿ',
+  'welcome.step2': 'ನಮಗೆ ಅರ್ಥವಾದದ್ದನ್ನು ಬರೆಯುತ್ತೇವೆ',
+  'welcome.step3': 'ಪರಿಶೀಲಿಸಿ ಮತ್ತು ತಪ್ಪುಗಳನ್ನು ಸರಿಪಡಿಸಿ',
+  'welcome.step4': 'ಹತ್ತಿರದ ಅವಕಾಶಗಳನ್ನು ಕಾರಣಗಳೊಂದಿಗೆ ತೋರಿಸುತ್ತೇವೆ',
+  'conversation.title': 'ನಿಮ್ಮ ಕೆಲಸದ ಬಗ್ಗೆ ತಿಳಿಸಿ',
+  'conversation.listening': 'ಆಲಿಸುತ್ತಿದ್ದೇವೆ… ಮಾತನಾಡಿ',
+  'conversation.tapToSpeak': 'ಮಾತನಾಡಲು ಒತ್ತಿರಿ',
+  'conversation.stop': 'ನಿಲ್ಲಿಸಿ',
+  'conversation.send': 'ಕಳುಹಿಸಿ',
+  'conversation.placeholder': 'ಇಲ್ಲಿ ಬರೆಯಿರಿ…',
+  'conversation.progress': 'ಇಲ್ಲಿಯವರೆಗೆ ಅರ್ಥವಾದದ್ದು',
+  'profile.title': 'ನಮಗೆ ಹೀಗೆ ಅರ್ಥವಾಗಿದೆ…',
+  'profile.subtitle': 'ದಯವಿಟ್ಟು ಪರಿಶೀಲಿಸಿ, ತಪ್ಪುಗಳಿದ್ದರೆ ಸರಿಪಡಿಸಿ.',
+  'profile.confirm': 'ಇದು ಸರಿ ಇದೆ',
+  'profile.edit': 'ಬದಲಾಯಿಸಿ',
+  'pathways.title': 'ನಿಮಗಾಗಿ ಸೂಕ್ತ ಮಾರ್ಗಗಳು',
+  'pathways.subtitle': 'ನಿಮಗೆ ಇಷ್ಟವಾದ ಮಾರ್ಗ ಆಯ್ಕೆಮಾಡಿ. ನಿರ್ಧಾರ ನಿಮ್ಮದೇ.',
+  'pathways.whyFits': 'ಇದು ಏಕೆ ಸರಿಹೊಂದುತ್ತದೆ',
+  'pathways.alreadyHave': 'ನಿಮ್ಮಲ್ಲಿರುವ ಕೌಶಲ್ಯಗಳು',
+  'pathways.needNext': 'ಮುಂದೆ ಕಲಿಯಬೇಕಾದದ್ದು',
+  'pathways.choose': 'ಈ ಮಾರ್ಗ ಆಯ್ಕೆಮಾಡಿ',
+  'pathways.km': 'ಕಿ.ಮೀ.',
+  'progress.title': 'ನಿಮ್ಮ ಮಾರ್ಗ',
+  'common.loading': 'ಲೋಡ್ ಆಗುತ್ತಿದೆ…',
+  'common.retry': 'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ',
+}
+
+const te: Dictionary = {
+  'app.name': 'లైవ్లీహుడ్ నేవిగేటర్',
+  'app.tagline': 'నైపుణ్యాల నుండి శిక్షణ, శిక్షణ నుండి ఉపాధి',
+  'welcome.title': 'మీరు చేయాలనుకుంటున్న పనిని చెప్పండి.',
+  'welcome.hero': 'మీ నైపుణ్యాలకు సరిపోయే మార్గాన్ని కనుగొనండి.',
+  'welcome.subtitle': 'సహజంగా మాట్లాడండి. మీ నైపుణ్యాలను సరైన శిక్షణ మరియు ఉపాధితో కలుపుతాము.',
+  'welcome.speak': 'మాట్లాడండి',
+  'welcome.type': 'టైప్ చేయండి',
+  'welcome.demo': 'రవి డెమో చూడండి',
+  'welcome.language': 'మీ భాషను ఎంచుకోండి',
+  'welcome.how': 'ఇది ఎలా పనిచేస్తుంది',
+  'welcome.step1': 'మీ పని గురించి మాట్లాడండి',
+  'welcome.step2': 'మాకు అర్థమైనది రాస్తాము',
+  'welcome.step3': 'సరిచూసి తప్పులను సవరించండి',
+  'welcome.step4': 'దగ్గర్లోని అవకాశాలను వివరాలతో చూపిస్తాము',
+  'conversation.title': 'మీ పని గురించి చెప్పండి',
+  'conversation.listening': 'వింటున్నాము… మాట్లాడండి',
+  'conversation.tapToSpeak': 'మాట్లాడటానికి నొక్కండి',
+  'conversation.stop': 'ఆపండి',
+  'conversation.send': 'పంపండి',
+  'conversation.placeholder': 'ఇక్కడ టైప్ చేయండి…',
+  'conversation.progress': 'ఇప్పటివరకు అర్థమైనది',
+  'profile.title': 'మాకు ఇలా అర్థమైంది…',
+  'profile.subtitle': 'దయచేసి తనిఖీ చేయండి, ఏదైనా తప్పు ఉంటే మార్చండి.',
+  'profile.confirm': 'ఇది సరైనదే',
+  'profile.edit': 'మార్చండి',
+  'pathways.title': 'మీకు అందుబాటులో ఉన్న మార్గాలు',
+  'pathways.subtitle': 'మీకు నచ్చినది ఎంచుకోండి. నిర్ణయం మీదే.',
+  'pathways.whyFits': 'ఇది ఎందుకు సరిపోతుంది',
+  'pathways.alreadyHave': 'మీకు ఇప్పటికే ఉన్న నైపుణ్యాలు',
+  'pathways.needNext': 'తరువాత నేర్చుకోవలసినవి',
+  'pathways.choose': 'ఈ మార్గాన్ని ఎంచుకోండి',
+  'pathways.km': 'కి.ಮೀ.',
+  'progress.title': 'మీ ప్రయాణం',
+  'common.loading': 'లోడ్ అవుతోంది…',
+  'common.retry': 'మళ్లీ ప్రయత్నించండి',
+}
+
+const DICTIONARIES: Record<LanguageCode, Dictionary> = { en, hi, mr, ta, kn, te }
 
 /** Look up a string, falling back to English then to the key itself. */
 export function translate(language: string, key: string): string {

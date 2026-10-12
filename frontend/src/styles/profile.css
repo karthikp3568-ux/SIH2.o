@@ -212,3 +212,126 @@
   .confirm-dock__inner .btn--lg { min-height: 48px; padding: 10px 16px; font-size: 0.98rem; }
   .option-grid { grid-template-columns: 1fr; }
 }
+
+/* ===========================================================================
+   NSQF Skill Passport Print / PDF Export Styling
+=========================================================================== */
+
+.passport-print-header,
+.passport-print-footer {
+  display: none;
+}
+
+@media print {
+  /* Hide interactive web elements */
+  nav,
+  header.nav,
+  footer,
+  .profile-hero .row,
+  .back-link,
+  .btn,
+  .pcard__edit,
+  .confirm-dock,
+  .toast {
+    display: none !important;
+  }
+
+  body {
+    background: #fff !important;
+    color: #111 !important;
+    font-size: 11pt !important;
+  }
+
+  .container {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .profile-hero {
+    border-bottom: 2px solid #000;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+  }
+
+  .passport-print-header {
+    display: block !important;
+    border: 2px solid #1e3a8a;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    background: #f8fafc !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .passport-print-badge {
+    display: inline-block;
+    background: #1e3a8a !important;
+    color: #fff !important;
+    font-size: 8.5pt;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .passport-print-banner h2 {
+    margin: 4px 0 2px;
+    font-size: 15pt;
+    color: #0f172a;
+  }
+
+  .passport-print-sub {
+    margin: 0 0 12px;
+    font-size: 9pt;
+    color: #475569;
+  }
+
+  .passport-print-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px 16px;
+    font-size: 10pt;
+    border-top: 1px solid #cbd5e1;
+    padding-top: 10px;
+  }
+
+  .passport-print-meta-grid span {
+    color: #64748b;
+    margin-right: 6px;
+  }
+
+  .understood-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .pcard {
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+    padding: 12px 16px !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .pcard--wide {
+    grid-column: span 2 !important;
+  }
+
+  .passport-print-footer {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1.5px solid #000;
+    margin-top: 24px;
+    padding-top: 10px;
+    font-size: 8.5pt;
+    color: #475569;
+    page-break-inside: avoid;
+  }
+}
