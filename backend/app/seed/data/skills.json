@@ -503,5 +503,152 @@
       {"alias": "driver", "language": "en"},
       {"alias": "ड्राइविंग", "language": "hi"}
     ]
+  },
+  {
+    "code": "it_software",
+    "name": "Information Technology & Software",
+    "sector": "IT & Software",
+    "is_category": true,
+    "description": "Software development, coding, and computer systems.",
+    "aliases": [
+      {"alias": "software", "language": "en"},
+      {"alias": "it", "language": "en"},
+      {"alias": "coding", "language": "en"},
+      {"alias": "programming", "language": "en"},
+      {"alias": "computer", "language": "en"},
+      {"alias": "सॉफ्टवेयर", "language": "hi"},
+      {"alias": "कोडिंग", "language": "hi"}
+    ]
+  },
+  {
+    "code": "python_programming",
+    "name": "Python programming",
+    "sector": "IT & Software",
+    "parent": "it_software",
+    "is_category": false,
+    "description": "Writing Python code, scripting, and data processing.",
+    "aliases": [
+      {"alias": "python", "language": "en"},
+      {"alias": "python programming", "language": "en"},
+      {"alias": "python coding", "language": "en"},
+      {"alias": "python developer", "language": "en"},
+      {"alias": "django", "language": "en"},
+      {"alias": "flask", "language": "en"},
+      {"alias": "पायथन", "language": "hi"}
+    ]
+  },
+  {
+    "code": "java_programming",
+    "name": "Java programming",
+    "sector": "IT & Software",
+    "parent": "it_software",
+    "is_category": false,
+    "description": "Object-oriented application development with Java.",
+    "aliases": [
+      {"alias": "java", "language": "en"},
+      {"alias": "java programming", "language": "en"},
+      {"alias": "java developer", "language": "en"},
+      {"alias": "core java", "language": "en"},
+      {"alias": "spring boot", "language": "en"},
+      {"alias": "जावा", "language": "hi"}
+    ]
+  },
+  {
+    "code": "web_development",
+    "name": "Web development",
+    "sector": "IT & Software",
+    "parent": "it_software",
+    "is_category": false,
+    "description": "Building websites and web applications with HTML, CSS, JavaScript, and React.",
+    "aliases": [
+      {"alias": "web development", "language": "en"},
+      {"alias": "web developer", "language": "en"},
+      {"alias": "web design", "language": "en"},
+      {"alias": "frontend", "language": "en"},
+      {"alias": "javascript", "language": "en"},
+      {"alias": "react", "language": "en"},
+      {"alias": "html css", "language": "en"},
+      {"alias": "full stack", "language": "en"},
+      {"alias": "वेब डेवलपमेंट", "language": "hi"}
+    ]
+  },
+  {
+    "code": "database_management",
+    "name": "Database management & SQL",
+    "sector": "IT & Software",
+    "parent": "it_software",
+    "is_category": false,
+    "description": "Writing SQL queries and managing relational database tables.",
+    "aliases": [
+      {"alias": "sql", "language": "en"},
+      {"alias": "database", "language": "en"},
+      {"alias": "mysql", "language": "en"},
+      {"alias": "postgres", "language": "en"},
+      {"alias": "postgresql", "language": "en"},
+      {"alias": "queries", "language": "en"},
+      {"alias": "डाटाबेस", "language": "hi"}
+    ]
+  },
+  {
+    "code": "computer_basics",
+    "name": "Computer operation & MS Office",
+    "sector": "IT & Software",
+    "parent": "it_software",
+    "is_category": false,
+    "description": "Operating PCs, data entry, spreadsheets in Excel, and office word processing.",
+    "aliases": [
+      {"alias": "computer", "language": "en"},
+      {"alias": "ms office", "language": "en"},
+      {"alias": "excel", "language": "en"},
+      {"alias": "data entry", "language": "en"},
+      {"alias": "typing", "language": "en"},
+      {"alias": "computer basics", "language": "en"},
+      {"alias": "कंप्यूटर", "language": "hi"},
+      {"alias": "डाटा एंट्री", "language": "hi"}
+    ]
+  },
+  {
+    "code": "it_troubleshooting",
+    "name": "IT & Hardware troubleshooting",
+    "sector": "IT & Software",
+    "parent": "it_software",
+    "is_category": false,
+    "description": "Diagnosing hardware faults, network cabling, and desktop IT support.",
+    "aliases": [
+      {"alias": "it support", "language": "en"},
+      {"alias": "hardware", "language": "en"},
+      {"alias": "networking", "language": "en"},
+      {"alias": "computer repair", "language": "en"},
+      {"alias": "hardware support", "language": "en"}
+    ]
+  },
+  {
+    "code": "cad_drafting",
+    "name": "CAD Drafting & 3D Design",
+    "sector": "Engineering",
+    "is_category": false,
+    "description": "Creating engineering drawings and models using AutoCAD and CAD tools.",
+    "aliases": [
+      {"alias": "autocad", "language": "en"},
+      {"alias": "cad", "language": "en"},
+      {"alias": "cad drafting", "language": "en"},
+      {"alias": "engineering drawing", "language": "en"},
+      {"alias": "solidworks", "language": "en"}
+    ]
+  },
+  {
+    "code": "accounting_tally",
+    "name": "Accounting & Tally",
+    "sector": "Cross-sector",
+    "is_category": false,
+    "description": "Bookkeeping, ledger accounts, and GST compliance with Tally.",
+    "aliases": [
+      {"alias": "accounting", "language": "en"},
+      {"alias": "tally", "language": "en"},
+      {"alias": "gst", "language": "en"},
+      {"alias": "bookkeeping", "language": "en"},
+      {"alias": "अकाउंटिंग", "language": "hi"},
+      {"alias": "टैली", "language": "hi"}
+    ]
   }
 ]

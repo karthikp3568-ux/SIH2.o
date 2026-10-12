@@ -212,5 +212,84 @@
     "competencies": [
       {"code": "AGR/N0901", "is_core": true, "sequence": 1, "weight": 1.0}
     ]
+  },
+  {
+    "code": "SSC/Q0508",
+    "title": "Junior Software Developer",
+    "occupation_role": "Junior Software Developer / Programmer",
+    "sector": "IT & Software",
+    "sub_sector": "Software Products & IT Services",
+    "nsqf_level": 5,
+    "minimum_education": "class_12",
+    "typical_duration_hours": 400,
+    "status": "active",
+    "version": "2.0",
+    "source": "NASSCOM IT-ITeS Sector Skill Council · NSQF Standard",
+    "last_verified_days_ago": 15,
+    "valid_until_days": 365,
+    "description": "Develop and maintain software applications using Python, Java, and database systems. Suitable for learners transitioning to software engineering careers.",
+    "competencies": [
+      {"code": "SSC/N0508", "is_core": true, "sequence": 1, "weight": 1.0},
+      {"code": "SSC/N0502", "is_core": true, "sequence": 2, "weight": 0.8}
+    ]
+  },
+  {
+    "code": "SSC/Q0501",
+    "title": "Web & Frontend Application Developer",
+    "occupation_role": "Web Developer",
+    "sector": "IT & Software",
+    "sub_sector": "Web Technologies",
+    "nsqf_level": 5,
+    "minimum_education": "class_12",
+    "typical_duration_hours": 360,
+    "status": "active",
+    "version": "2.0",
+    "source": "NASSCOM IT-ITeS Sector Skill Council · NSQF Standard",
+    "last_verified_days_ago": 20,
+    "valid_until_days": 365,
+    "description": "Design and build modern web applications using HTML5, CSS3, JavaScript, React, and backend API integration.",
+    "competencies": [
+      {"code": "SSC/N0501", "is_core": true, "sequence": 1, "weight": 1.0},
+      {"code": "SSC/N0502", "is_core": true, "sequence": 2, "weight": 0.7}
+    ]
+  },
+  {
+    "code": "SSC/Q0110",
+    "title": "IT Helpdesk & System Support Specialist",
+    "occupation_role": "IT Support Technician",
+    "sector": "IT & Software",
+    "sub_sector": "IT Operations",
+    "nsqf_level": 4,
+    "minimum_education": "class_10",
+    "typical_duration_hours": 300,
+    "status": "active",
+    "version": "1.0",
+    "source": "NSQF Qualification Pack SSC/Q0110",
+    "last_verified_days_ago": 10,
+    "valid_until_days": 365,
+    "description": "Troubleshoot computer hardware, install software packages, configure local networks, and assist enterprise desktop users.",
+    "competencies": [
+      {"code": "SSC/N0110", "is_core": true, "sequence": 1, "weight": 1.0},
+      {"code": "SSC/N2212", "is_core": true, "sequence": 2, "weight": 0.6}
+    ]
+  },
+  {
+    "code": "CSC/Q0402",
+    "title": "Mechanical CAD Draughtsman",
+    "occupation_role": "CAD Technician",
+    "sector": "Engineering",
+    "sub_sector": "Design & Engineering",
+    "nsqf_level": 4,
+    "minimum_education": "class_10",
+    "typical_duration_hours": 320,
+    "status": "active",
+    "version": "1.0",
+    "source": "Capital Goods Skill Council · NSQF Standard",
+    "last_verified_days_ago": 12,
+    "valid_until_days": 365,
+    "description": "Draft 2D and 3D technical drawings and engineering components using CAD software.",
+    "competencies": [
+      {"code": "CSC/N0402", "is_core": true, "sequence": 1, "weight": 1.0}
+    ]
   }
 ]

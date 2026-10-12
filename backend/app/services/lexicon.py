@@ -122,6 +122,38 @@ OCCUPATION_PHRASES: list[tuple[str, str, tuple[str, ...]]] = [
         ("shop", "shopkeeper", "small business", "dukan", "दुकान", "व्यापार", "கடை"),
     ),
     (
+        "Software engineer / developer",
+        "IT & Software",
+        ("software engineer", "software developer", "software", "developer", "programmer",
+         "coder", "coding", "web developer", "app developer", "computer engineer",
+         "it engineer", "engineer", "engineering", "सॉफ्टवेयर इंजीनियर", "डेवलपर", "कोडिंग",
+         "மென்பொருள் பொறியாளர்", "సాఫ్ట్‌వేర్ ఇంజనీర్"),
+    ),
+    (
+        "IT support / computer technician",
+        "IT & Software",
+        ("it support", "computer technician", "hardware engineer", "hardware support",
+         "network technician", "system admin", "pc repair", "कंप्यूटर ऑपरेटर", "आईटी"),
+    ),
+    (
+        "Data analyst / Office associate",
+        "IT & Software",
+        ("data analyst", "data entry", "office assistant", "excel operator",
+         "computer operator", "डाटा एंट्री"),
+    ),
+    (
+        "Mechanical / Civil engineer",
+        "Engineering",
+        ("mechanical engineer", "civil engineer", "cad engineer", "site engineer",
+         "diploma engineer", "मैकेनिकल इंजीनियर", "सिविल इंजीनियर"),
+    ),
+    (
+        "Accountant / Finance executive",
+        "Finance",
+        ("accountant", "accounting", "tally operator", "finance executive", "bookkeeper",
+         "मुनीम", "अकाउंटेंट"),
+    ),
+    (
         "Currently not working",
         None,
         ("no work", "unemployed", "not working", "jobless", "sitting at home", "बेरोजगार",

@@ -101,6 +101,53 @@ OCCUPATIONS: dict[str, tuple[str, list[str]]] = {
     "Tailoring": ("Apparel", ["I work as a tailor", "I do stitching and tailoring work"]),
     "Shop / small trade": ("Retail", ["I run a small shop", "I do small trading business"]),
     "Electrician": ("Electrical", ["I work as an electrician", "I do house wiring work for people"]),
+    "Software engineer / developer": (
+        "IT & Software",
+        [
+            "I want to become an engineer",
+            "I want to become a software engineer",
+            "I work as a software engineer",
+            "I am a software developer",
+            "I do programming and coding in Python and Java",
+            "I develop web applications and software",
+            "I work with computers and technology",
+        ],
+    ),
+    "IT support / computer technician": (
+        "IT & Software",
+        [
+            "I work in IT support",
+            "I do computer hardware and networking",
+            "I repair computers and laptops",
+            "I do system administration",
+        ],
+    ),
+    "Data analyst / Office associate": (
+        "IT & Software",
+        [
+            "I do data entry and computer work",
+            "I work as a data analyst",
+            "I work in an office on computers and Excel",
+            "I do back office computer operations",
+        ],
+    ),
+    "Mechanical / Civil engineer": (
+        "Engineering",
+        [
+            "I am a mechanical engineer",
+            "I am a civil engineer",
+            "I work in engineering and CAD design",
+            "I do structural and mechanical drafting",
+        ],
+    ),
+    "Accountant / Finance executive": (
+        "Finance",
+        [
+            "I work as an accountant",
+            "I do accounting and bookkeeping in Tally",
+            "I manage financial accounts and tax filing",
+        ],
+    ),
     "Currently not working": (None, ["I have no work right now", "I am unemployed", "I am sitting at home without a job"]),
 }
 

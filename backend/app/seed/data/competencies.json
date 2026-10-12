@@ -234,5 +234,84 @@
     "skills": [
       {"code": "irrigation_operation", "coverage": 0.6}
     ]
+  },
+  {
+    "code": "SSC/N0508",
+    "name": "Write application code in Python and Java",
+    "nos_code": "SSC/N0508",
+    "sector": "IT & Software",
+    "nsqf_level": 5,
+    "description": "Develop modular code, functions, and unit tests in Python and Java according to functional requirements.",
+    "skills": [
+      {"code": "python_programming", "coverage": 0.9},
+      {"code": "java_programming", "coverage": 0.9}
+    ]
+  },
+  {
+    "code": "SSC/N0501",
+    "name": "Build responsive web interfaces and applications",
+    "nos_code": "SSC/N0501",
+    "sector": "IT & Software",
+    "nsqf_level": 5,
+    "description": "Develop client-side components using modern web technologies and frontend frameworks.",
+    "skills": [
+      {"code": "web_development", "coverage": 0.95}
+    ]
+  },
+  {
+    "code": "SSC/N0502",
+    "name": "Manage databases and write structured SQL queries",
+    "nos_code": "SSC/N0502",
+    "sector": "IT & Software",
+    "nsqf_level": 5,
+    "description": "Design relational tables, perform CRUD operations, and write queries in SQL databases.",
+    "skills": [
+      {"code": "database_management", "coverage": 0.95}
+    ]
+  },
+  {
+    "code": "SSC/N0110",
+    "name": "Diagnose IT system faults and assist desktop users",
+    "nos_code": "SSC/N0110",
+    "sector": "IT & Software",
+    "nsqf_level": 4,
+    "description": "Troubleshoot operating systems, peripheral connectivity, hardware errors, and network connections.",
+    "skills": [
+      {"code": "it_troubleshooting", "coverage": 0.9},
+      {"code": "computer_basics", "coverage": 0.5}
+    ]
+  },
+  {
+    "code": "SSC/N2212",
+    "name": "Operate office systems and perform data entry in Excel",
+    "nos_code": "SSC/N2212",
+    "sector": "IT & Software",
+    "nsqf_level": 4,
+    "description": "Maintain spreadsheets, enter validated records, and produce structured reports.",
+    "skills": [
+      {"code": "computer_basics", "coverage": 0.95}
+    ]
+  },
+  {
+    "code": "CSC/N0402",
+    "name": "Produce technical drawings using CAD tools",
+    "nos_code": "CSC/N0402",
+    "sector": "Engineering",
+    "nsqf_level": 4,
+    "description": "Develop 2D engineering schematics, dimensional tolerances, and CAD part models.",
+    "skills": [
+      {"code": "cad_drafting", "coverage": 0.95}
+    ]
+  },
+  {
+    "code": "BSC/N0101",
+    "name": "Record business transactions and ledger entries in Tally",
+    "nos_code": "BSC/N0101",
+    "sector": "Cross-sector",
+    "nsqf_level": 4,
+    "description": "Enter debit/credit vouchers, generate trial balances, and process GST filings.",
+    "skills": [
+      {"code": "accounting_tally", "coverage": 0.95}
+    ]
   }
 ]
