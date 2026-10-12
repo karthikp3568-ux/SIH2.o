@@ -1,314 +1,277 @@
 /**
- * Screen 3 — "Your possible pathways".
+ * Pathways — the recommendations.
  *
- * Includes the mobility control, because watching the ranking change when the
- * travel limit changes is the clearest demonstration that this is not a
- * similarity search. Also includes the first-class no-match view and the
- * "why some options are not shown" disclosure.
+ * The travel control re-runs the ranking server side. Cards that change place
+ * say so ("Up from #3"), which is the clearest proof that distance and
+ * mobility are ranking factors, not a filter bolted on at the end.
  */
 
-import { useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { api } from '../api/client'
-import { Layout } from '../components/Layout'
-import { PathwayCard } from '../components/PathwayCard'
-import { SkillGraphView } from '../components/SkillGraphView'
-import { Button, Card, Chip, EmptyState, ErrorState, Loading, Notice } from '../components/ui'
-import { useAction, useAsync } from '../hooks/useAsync'
-import { useApp } from '../state/AppContext'
 import type { Recommendation, RecommendationRun } from '../api/types'
+import { ComparePanel } from '../components/ComparePanel'
+import { FlowSteps } from '../components/FlowSteps'
+import { Icon } from '../components/Icon'
+import { Layout } from '../components/Layout'
+import { MapPanel } from '../components/MapPanel'
+import type { MapPoint } from '../components/MapPanel'
+import { PathwayCard } from '../components/PathwayCard'
+import { WhyThisPanel } from '../components/WhyThisPanel'
+import { Button, EmptyState, ErrorState, Loading } from '../components/ui'
+import { useAction, useAsync } from '../hooks/useAsync'
+import { loadMyRun } from '../lib/data'
+import { MOBILITY_OPTIONS } from '../lib/labels'
+import { opportunityKey } from '../lib/pathway'
 
-const MOBILITY_CHOICES = [
-  { value: 'low', icon: '🏠', key: 'mobility.low' },
-  { value: 'medium', icon: '🚌', key: 'mobility.medium' },
-  { value: 'high', icon: '🚆', key: 'mobility.high' },
-]
-
-function NoMatchView({ run, onWiden }: { run: RecommendationRun; onWiden: () => void }) {
+function NoMatch({ run, onWiden, onTalk }: { run: RecommendationRun; onWiden: () => void; onTalk: () => void }) {
   const noMatch = run.no_match
   if (!noMatch) return null
+  const closest = noMatch.closest_pathway
   return (
-    <div className="stack">
-      <Notice tone="warn" title={noMatch.message}>
-        <p className="small" style={{ margin: 0 }}>
-          We will not invent an opportunity to fill this space. Here is where you actually stand and
-          what would open options up.
-        </p>
-      </Notice>
-
-      {noMatch.closest_pathway ? (
-        <Card>
-          <h3>Closest recognised pathway for you</h3>
-          <div className="row row--between" style={{ marginBottom: 'var(--space-3)' }}>
-            <div>
-              <strong>{noMatch.closest_pathway.title}</strong>
-              <p className="small muted" style={{ margin: 0 }}>
-                {noMatch.closest_pathway.qualification_code} ·{' '}
-                {noMatch.closest_pathway.nsqf_level
-                  ? `NSQF level ${noMatch.closest_pathway.nsqf_level}`
-                  : 'level not stated'}
-              </p>
-            </div>
-            <Chip tone="info" icon="◎">
-              {Math.round((noMatch.closest_pathway.coverage_ratio ?? 0) * 100)}% covered
-            </Chip>
-          </div>
-          {noMatch.missing_competencies.length > 0 ? (
-            <>
-              <p className="small strong">What you would need</p>
-              <ul className="reason-list">
-                {noMatch.missing_competencies.map((competency) => (
-                  <li key={competency.code}>
-                    <span className="reason-list__icon" aria-hidden="true">
-                      ○
-                    </span>
-                    <span className="small">{competency.name}</span>
-                  </li>
-                ))}
-              </ul>
-            </>
-          ) : null}
-          <p className="tiny muted" style={{ marginTop: 'var(--space-3)', marginBottom: 0 }}>
-            Source: {noMatch.closest_pathway.source}
+    <div className="no-match enter">
+      <div className="no-match__head">
+        <span className="icon-tile icon-tile--lg icon-tile--amber">
+          <Icon name="search" size={26} />
+        </span>
+        <div>
+          <h2 style={{ marginBottom: 6 }}>We couldn’t find a verified opportunity matching all your preferences.</h2>
+          <p className="muted" style={{ margin: 0 }}>
+            We won’t invent one to fill the space. Here’s where you stand, and what would open options up.
           </p>
-        </Card>
+        </div>
+      </div>
+
+      {closest ? (
+        <div className="no-match__closest">
+          <span className="eyebrow">Closest recognised pathway</span>
+          <h3 style={{ margin: '4px 0' }}>{closest.title}</h3>
+          {noMatch.missing_competencies.length > 0 ? (
+            <ul className="tag-list" style={{ marginTop: 'var(--space-3)' }}>
+              {noMatch.missing_competencies.map((c) => (
+                <li key={c.code}>
+                  <span className="need-chip">{c.name}</span>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
       ) : null}
 
       {noMatch.prerequisite_suggestions.length > 0 ? (
-        <Card>
-          <h3>Where to start</h3>
-          <ul className="reason-list">
-            {noMatch.prerequisite_suggestions.map((suggestion) => (
-              <li key={suggestion.competency_code}>
-                <span className="reason-list__icon" aria-hidden="true">
-                  →
-                </span>
-                <span className="small">{suggestion.suggestion}</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      ) : null}
-
-      <Card>
-        <h3>What to check next</h3>
-        <ul className="reason-list">
-          {noMatch.what_to_verify.map((item, index) => (
-            <li key={index}>
-              <span className="reason-list__icon" aria-hidden="true">
-                •
+        <ul className="check-list">
+          {noMatch.prerequisite_suggestions.map((s) => (
+            <li key={s.competency_code}>
+              <span className="check-list__mark check-list__mark--next">
+                <Icon name="arrowRight" size={13} strokeWidth={2.6} />
               </span>
-              <span className="small">{item}</span>
+              <span>{s.suggestion}</span>
             </li>
           ))}
         </ul>
-        <div className="row" style={{ marginTop: 'var(--space-4)' }}>
-          {noMatch.retry_options.some((option) => option.action === 'widen_radius') ? (
-            <Button icon="🔍" onClick={onWiden}>
-              Search a wider area
-            </Button>
-          ) : null}
-        </div>
-      </Card>
+      ) : null}
+
+      <div className="row">
+        <Button icon="map" onClick={onWiden}>
+          Broaden location
+        </Button>
+        <Button variant="secondary" icon="cap" onClick={onTalk}>
+          Explore training pathways
+        </Button>
+      </div>
     </div>
   )
 }
 
-function ExclusionsPanel({ run }: { run: RecommendationRun }) {
-  const grouped = new Map<string, { reason: string; items: typeof run.exclusions }>()
-  for (const exclusion of run.exclusions ?? []) {
-    const entry = grouped.get(exclusion.reason_code) ?? { reason: exclusion.reason, items: [] }
-    entry.items.push(exclusion)
-    grouped.set(exclusion.reason_code, entry)
-  }
-  if (grouped.size === 0) return null
-
-  return (
-    <details className="card">
-      <summary style={{ cursor: 'pointer', fontWeight: 650 }}>
-        Why some options are not shown ({run.exclusions.length})
-      </summary>
-      <p className="small muted" style={{ marginTop: 'var(--space-3)' }}>
-        We looked at {run.candidates_considered} listing
-        {run.candidates_considered === 1 ? '' : 's'} and {run.candidates_after_filters} passed the
-        eligibility and availability checks. Everything removed is listed with its reason.
-      </p>
-      {[...grouped.entries()].map(([code, group]) => (
-        <div key={code} style={{ marginTop: 'var(--space-3)' }}>
-          <p className="small strong" style={{ marginBottom: 4 }}>
-            {group.reason} ({group.items.length})
-          </p>
-          <ul className="reason-list">
-            {group.items.map((item, index) => (
-              <li key={index}>
-                <span className="reason-list__icon" aria-hidden="true">
-                  ✕
-                </span>
-                <span className="small">
-                  {item.title}
-                  {item.detail ? <span className="muted"> — {item.detail}</span> : null}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </details>
-  )
-}
-
 export function Pathways() {
-  const { t } = useApp()
   const navigate = useNavigate()
-  const [mobility, setMobility] = useState<string | null>(null)
   const [run, setRun] = useState<RecommendationRun | null>(null)
-  const [showGraph, setShowGraph] = useState(false)
+  const [movedFrom, setMovedFrom] = useState<Map<string, number>>(new Map())
+  const [why, setWhy] = useState<Recommendation | null>(null)
+  const [hover, setHover] = useState<string | null>(null)
+  const [comparing, setComparing] = useState(false)
+  const closeWhy = useCallback(() => setWhy(null), [])
 
   const initial = useAsync(async () => {
-    const profile = await api.profile()
-    let current: RecommendationRun
-    try {
-      current = await api.latestRun(profile.id)
-    } catch {
-      current = await api.generate({})
-    }
-    setRun(current)
-    setMobility(current.mobility_used)
-    return { profile, run: current }
+    const [{ profile, run: latest }, opps] = await Promise.all([
+      loadMyRun(),
+      api.searchOpportunities({ limit: '100', include_unavailable: 'true' }).catch(() => null),
+    ])
+    setRun(latest)
+    return { profile, opps }
   }, [])
 
-  const graph = useAsync(
-    async () => (initial.data ? api.skillGraph(initial.data.profile.id) : null),
-    [initial.data?.profile.id],
-  )
-
-  const regenerate = useAction(async (nextMobility?: string, searchWider = false) => {
-    const fresh = await api.generate({
-      mobility: nextMobility ?? mobility ?? undefined,
-      search_wider: searchWider,
-    })
+  const rerank = useAction(async (payload: { mobility?: string; search_wider?: boolean }) => {
+    const previous = new Map((run?.recommendations ?? []).map((r) => [opportunityKey(r), r.rank]))
+    const fresh = await api.generate(payload)
+    setMovedFrom(previous)
     setRun(fresh)
-    if (nextMobility) setMobility(nextMobility)
     return fresh
   })
 
-  const openDetail = (recommendation: Recommendation) => {
-    navigate(`/pathway/${recommendation.id}`)
-  }
+  const points = useMemo<MapPoint[]>(() => {
+    const opps = initial.data?.opps
+    if (!opps || !run) return []
+    const ranked = new Map(run.recommendations.map((r) => [opportunityKey(r), r]))
+    return opps.items
+      .filter((o) => o.latitude !== null && o.longitude !== null)
+      .map((o) => {
+        const rec = ranked.get(opportunityKey(o))
+        return {
+          id: rec?.id ?? o.id,
+          title: o.title,
+          provider: o.provider,
+          type: o.opportunity_type,
+          latitude: o.latitude!,
+          longitude: o.longitude!,
+          distanceKm: rec?.distance_km ?? opps.distances_km[o.id] ?? null,
+          rank: rec?.rank,
+          available: o.status === 'active',
+          verificationStatus: o.verification_status,
+          lastVerifiedAt: o.last_verified_at,
+          validUntil: o.valid_until,
+        }
+      })
+  }, [initial.data, run])
 
   if (initial.loading) {
     return (
       <Layout>
-        <Loading label={t('common.loading')} />
+        <Loading label="Finding pathways near you…" />
       </Layout>
     )
   }
-  if (initial.error || !run) {
+  if (initial.error || !run || !initial.data) {
     return (
       <Layout>
-        <ErrorState message={initial.error ?? 'Could not load your pathways.'} onRetry={initial.reload} />
+        <EmptyState
+          icon="route"
+          title="No pathways yet"
+          description="Tell us about your work and we’ll find training and work that fits — near you."
+          action={
+            <Button icon="mic" onClick={() => navigate('/start?mode=voice&fresh=1')}>
+              Start talking
+            </Button>
+          }
+        />
       </Layout>
     )
   }
+
+  const { profile } = initial.data
+  const recs = run.recommendations
+  const location = profile.location
+  const mobility = run.mobility_used
 
   return (
     <Layout>
-      <div className="stack">
+      <FlowSteps current="pathways" />
+
+      <header className="page-head page-head--split">
         <div>
-          <h1>{t('pathways.title')}</h1>
-          <p className="muted">{t('pathways.subtitle')}</p>
+          <span className="eyebrow">Your pathways</span>
+          <h1 className="display-2" style={{ margin: '6px 0 8px' }}>
+            {run.is_no_match
+              ? 'Nothing fits every preference yet'
+              : `${recs.length} pathway${recs.length === 1 ? '' : 's'} fit your profile`}
+          </h1>
+          <p className="lead" style={{ margin: 0, maxWidth: '54ch' }}>
+            Suggestions, not decisions. Each one says why it fits and what you’d still need.
+          </p>
         </div>
 
-        <Card>
-          <h3 style={{ fontSize: '1rem' }}>{t('pathways.changeTravel')}</h3>
-          <div className="choice-grid grid--3" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))' }}>
-            {MOBILITY_CHOICES.map((choice) => (
+        <div className="travel-control">
+          <span className="eyebrow">How far can you travel?</span>
+          <div className="segmented" role="group" aria-label="How far can you travel">
+            {MOBILITY_OPTIONS.map((option) => (
               <button
-                key={choice.value}
+                key={option.value}
                 type="button"
-                className="choice"
-                aria-pressed={mobility === choice.value}
-                onClick={() => regenerate.run(choice.value)}
-                disabled={regenerate.pending}
+                aria-pressed={mobility === option.value}
+                disabled={rerank.pending}
+                onClick={() => option.value !== mobility && rerank.run({ mobility: option.value })}
               >
-                <span className="choice__icon" aria-hidden="true">
-                  {choice.icon}
-                </span>
-                <span>{t(choice.key)}</span>
+                <Icon name={option.icon} size={16} /> {option.short}
               </button>
             ))}
           </div>
-          <p className="tiny muted" style={{ marginTop: 'var(--space-3)', marginBottom: 0 }}>
-            Searching within {run.radius_km_used ?? '—'} km. Changing this changes what you see, and
-            in what order — distance is one of nine factors, not a filter bolted on at the end.
-          </p>
-        </Card>
+          <span className="tiny muted">
+            {rerank.pending ? 'Updating…' : `Showing options within ${run.radius_km_used ?? '—'} km of you`}
+          </span>
+        </div>
+      </header>
 
-        {regenerate.pending ? <Loading label="Finding pathways…" /> : null}
-        {regenerate.error ? <ErrorState message={regenerate.error} /> : null}
+      {rerank.error ? <ErrorState title="We couldn’t re-rank right now" message="Your earlier results are still shown." /> : null}
 
-        {run.is_no_match ? (
-          <NoMatchView run={run} onWiden={() => regenerate.run(undefined, true)} />
-        ) : run.recommendations.length === 0 ? (
-          <EmptyState
-            icon="🔍"
-            title="No pathways yet"
-            description="Tell us about your work and we will find pathways for you."
-            action={<Button onClick={() => navigate('/start')}>Start</Button>}
-          />
-        ) : (
-          <div className="stack">
-            {run.recommendations.map((recommendation) => (
+      {run.is_no_match ? (
+        <NoMatch
+          run={run}
+          onWiden={() => rerank.run({ search_wider: true, mobility: 'high' })}
+          onTalk={() => navigate('/skills')}
+        />
+      ) : (
+        <div className={`paths ${rerank.pending ? 'is-busy' : ''}`}>
+          <div className="paths__list" key={run.run_id}>
+            {recs.map((rec, i) => (
               <PathwayCard
-                key={recommendation.id}
-                recommendation={recommendation}
-                onOpen={openDetail}
+                key={rec.id}
+                rec={rec}
+                index={i}
+                mobility={mobility}
+                movedFrom={movedFrom.get(opportunityKey(rec)) ?? null}
+                highlighted={hover === rec.id}
+                onHover={(on) => setHover(on ? rec.id : null)}
+                onWhy={() => setWhy(rec)}
+                onOpen={() => navigate(`/pathway/${rec.id}`)}
               />
             ))}
           </div>
-        )}
 
-        <ExclusionsPanel run={run} />
-
-        {graph.data ? (
-          <Card>
-            <div className="row row--between">
-              <h3 style={{ margin: 0 }}>Your skills</h3>
-              <Button variant="ghost" onClick={() => setShowGraph((value) => !value)}>
-                {showGraph ? 'Hide' : 'Show'}
-              </Button>
-            </div>
-            {showGraph ? (
-              <div style={{ marginTop: 'var(--space-4)' }}>
-                <SkillGraphView graph={graph.data} name={initial.data?.profile.display_name ?? 'You'} />
+          <aside className="paths__side">
+            {location?.latitude != null && location?.longitude != null ? (
+              <MapPanel
+                origin={{ latitude: location.latitude, longitude: location.longitude, label: location.label ?? location.village ?? 'Your location' }}
+                points={points}
+                radiusKm={run.radius_km_used}
+                highlight={hover}
+                onHighlight={setHover}
+              />
+            ) : (
+              <div className="map-panel map-panel--empty">
+                <Icon name="pin" size={28} />
+                <strong>We couldn’t detect your location.</strong>
+                <p className="small muted">Add it to see distances on a map.</p>
+                <Button variant="secondary" size="sm" onClick={() => navigate('/profile')}>
+                  Enter manually
+                </Button>
               </div>
-            ) : null}
-          </Card>
-        ) : null}
+            )}
 
-        <details className="card card--quiet">
-          <summary style={{ cursor: 'pointer', fontWeight: 650 }}>How pathways are ordered</summary>
-          <p className="small muted" style={{ marginTop: 'var(--space-3)' }}>
-            Each pathway is scored on nine factors and ordered by the weighted average. These
-            weights are our product judgement, chosen so no single factor dominates — they are not
-            empirically validated figures.
-          </p>
-          <ul className="reason-list">
-            {run.ranking_weights.map((weight) => (
-              <li key={weight.code}>
-                <span className="reason-list__icon" aria-hidden="true">
-                  •
+            {recs.length > 1 ? (
+              <button type="button" className="compare-toggle" aria-expanded={comparing} onClick={() => setComparing((v) => !v)}>
+                <span className="icon-tile icon-tile--sm icon-tile--blue">
+                  <Icon name="columns" size={17} />
                 </span>
-                <span className="small" style={{ flex: 1 }}>
-                  {weight.label}
+                <span className="grow">
+                  <strong>Compare side by side</strong>
+                  <span className="small muted">Skill fit, distance, eligibility, gap</span>
                 </span>
-                <span className="small muted">{Math.round(weight.share * 100)}%</span>
-              </li>
-            ))}
-          </ul>
-        </details>
-      </div>
+                <Icon name={comparing ? 'chevronDown' : 'chevronRight'} size={18} />
+              </button>
+            ) : null}
+          </aside>
+        </div>
+      )}
+
+      {comparing && recs.length > 1 ? (
+        <section className="compare-section" aria-label="Compare pathways">
+          <h2>Side by side</h2>
+          <ComparePanel recs={recs} onOpen={(r) => navigate(`/pathway/${r.id}`)} />
+        </section>
+      ) : null}
+
+      <WhyThisPanel rec={why} onClose={closeWhy} />
     </Layout>
   )
 }

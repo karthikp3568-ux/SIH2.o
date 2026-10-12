@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import threading
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, status
@@ -16,6 +17,7 @@ from .api import api_router
 from .config import get_settings
 from .db import SessionLocal, engine
 from .seed.seed_data import create_all_tables, seed_database
+from .services.semantic_understanding import warm_up
 
 logging.basicConfig(
     level=logging.INFO,
@@ -72,6 +74,10 @@ async def lifespan(app: FastAPI):
             db.rollback()
         finally:
             db.close()
+    if settings.profile_extractor != "rule_based" and settings.environment != "test":
+        # Loading the multilingual encoder takes a few seconds; do it now, off
+        # the request path, so the first person to speak is not kept waiting.
+        threading.Thread(target=warm_up, args=(SessionLocal,), daemon=True).start()
     yield
     logger.info("Shutting down")
 

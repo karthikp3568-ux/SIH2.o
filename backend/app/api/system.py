@@ -19,6 +19,7 @@ from ..providers import provider_health
 from ..schemas.common import SystemStatus
 from ..services.ranking import explain_weights
 from ..services.retrieval import EXCLUSION_REASONS
+from ..services.semantic_understanding import semantic_model_loaded
 
 router = APIRouter(prefix="/system", tags=["system"])
 settings = get_settings()
@@ -47,7 +48,11 @@ def status() -> SystemStatus:
             "browser_voice_input": True,
             "text_input": True,
             "server_side_asr": settings.speech_provider in {"bhashini", "mock"},
-            "llm_assisted_extraction": settings.profile_extractor == "llm",
+            "llm_assisted_extraction": settings.profile_extractor != "rule_based"
+            and settings.llm_provider == "anthropic"
+            and bool(settings.anthropic_api_key),
+            "multilingual_semantic_extraction": settings.profile_extractor != "rule_based"
+            and semantic_model_loaded(),
             "llm_explanation_polishing": settings.llm_provider != "none",
             "neural_embeddings": settings.embedding_provider == "sentence_transformers",
             "whatsapp_inbound_adapter": True,

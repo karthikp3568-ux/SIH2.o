@@ -9,7 +9,7 @@ from sqlalchemy import select
 
 from ..config import get_settings
 from ..core.enums import AuditAction, Role
-from ..core.rate_limit import auth_rate_limit
+from ..core.rate_limit import auth_rate_limit, default_rate_limit, register_rate_limit
 from ..deps import CurrentUser, DbSession
 from ..models import BeneficiaryProfile, Consent, User, as_aware, utcnow
 from ..schemas.auth import (
@@ -52,7 +52,7 @@ def _tokens_for(user: User) -> TokenPair:
     "/register",
     response_model=AuthResponse,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(auth_rate_limit)],
+    dependencies=[Depends(register_rate_limit)],
 )
 def register(payload: RegisterRequest, request: Request, db: DbSession) -> AuthResponse:
     existing = db.execute(select(User).where(User.email == payload.email)).scalar_one_or_none()
@@ -177,7 +177,7 @@ def login(payload: LoginRequest, request: Request, db: DbSession) -> AuthRespons
     return AuthResponse(user=UserOut.model_validate(user), tokens=_tokens_for(user))
 
 
-@router.post("/refresh", response_model=TokenPair, dependencies=[Depends(auth_rate_limit)])
+@router.post("/refresh", response_model=TokenPair, dependencies=[Depends(default_rate_limit)])
 def refresh(payload: RefreshRequest, db: DbSession) -> TokenPair:
     claims = decode_token(payload.refresh_token, TOKEN_TYPE_REFRESH)
     if claims is None:

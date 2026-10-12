@@ -201,6 +201,10 @@ export const api = {
       asr_confidence?: number
       speech_provider?: string
       slot_answer?: string
+      /** One id per utterance: a duplicate send returns the first result. */
+      client_message_id?: string
+      /** A low-confidence message the person has now confirmed. */
+      confirm_message_id?: string
     },
   ) => request<MessageResponse>(`/conversation/${id}/message`, { method: 'POST', body: payload }),
   confirmConversation: (id: string, payload: Record<string, unknown>) =>
@@ -211,6 +215,7 @@ export const api = {
 
   // --- profile ---
   profile: () => request<BeneficiaryProfile>('/beneficiary/profile'),
+  profileById: (id: string) => request<BeneficiaryProfile>(`/beneficiary/${id}/profile`),
   patchProfile: (payload: Record<string, unknown>) =>
     request<BeneficiaryProfile>('/beneficiary/profile', { method: 'PATCH', body: payload }),
   setLocation: (payload: Record<string, unknown>) =>
@@ -238,6 +243,7 @@ export const api = {
 
   // --- outcomes ---
   outcomes: () => request<Outcome[]>('/outcomes'),
+  outcomesFor: (beneficiaryId: string) => request<Outcome[]>(`/outcomes/beneficiary/${beneficiaryId}`),
   updateOutcome: (id: string, payload: Record<string, unknown>) =>
     request<Outcome>(`/outcomes/${id}`, { method: 'PATCH', body: payload }),
   feedback: (payload: Record<string, unknown>) =>

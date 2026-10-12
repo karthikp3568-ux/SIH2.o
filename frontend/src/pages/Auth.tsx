@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { api, storeSession } from '../api/client'
+import { Icon } from '../components/Icon'
 import { Layout } from '../components/Layout'
 import { Button, Card, ErrorState, Notice } from '../components/ui'
 import { useAction } from '../hooks/useAsync'
@@ -85,6 +86,14 @@ export function SignIn() {
   )
 }
 
+/** Mirrors the server's rules (backend/app/security.py) so people see them before submitting. */
+const PASSWORD_RULES: { label: string; test: (value: string) => boolean }[] = [
+  { label: 'At least 8 characters', test: (v) => v.length >= 8 },
+  { label: 'An uppercase letter (A–Z)', test: (v) => /[A-Z]/.test(v) },
+  { label: 'A lowercase letter (a–z)', test: (v) => /[a-z]/.test(v) },
+  { label: 'A number (0–9)', test: (v) => /[0-9]/.test(v) },
+]
+
 export function Register() {
   const navigate = useNavigate()
   const { adoptSession, language } = useApp()
@@ -153,9 +162,18 @@ export function Register() {
                 required
                 minLength={8}
               />
-              <p className="field__hint">
-                At least 8 characters, with an uppercase letter, a lowercase letter and a digit.
-              </p>
+              <ul className="pw-rules" aria-label="Password rules">
+                {PASSWORD_RULES.map((rule) => {
+                  const met = rule.test(form.password)
+                  return (
+                    <li key={rule.label} className={met ? 'is-met' : ''}>
+                      <Icon name={met ? 'check' : 'circle'} size={13} strokeWidth={met ? 3 : 2} />
+                      {rule.label}
+                      <span className="visually-hidden">{met ? ' — done' : ' — still needed'}</span>
+                    </li>
+                  )
+                })}
+              </ul>
             </div>
 
             <fieldset style={{ border: 0, padding: 0, margin: 'var(--space-5) 0 0' }}>

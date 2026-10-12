@@ -1,12 +1,14 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import type { ReactElement } from 'react'
 
-import { AdminDashboard } from './pages/admin/AdminDashboard'
+import { AdminConsole } from './pages/admin/AdminConsole'
 import { Conversation } from './pages/Conversation'
 import { PathwayDetail } from './pages/PathwayDetail'
 import { Pathways } from './pages/Pathways'
+import { MyProfile } from './pages/MyProfile'
+import { MySkills } from './pages/MySkills'
 import { ProfileConfirm } from './pages/ProfileConfirm'
-import { Progress } from './pages/Progress'
+import { Journey } from './pages/Journey'
 import { Register, SignIn } from './pages/Auth'
 import { Start } from './pages/Start'
 import { SystemInfo } from './pages/SystemInfo'
@@ -26,7 +28,7 @@ function NotFound() {
   return (
     <Layout>
       <EmptyState
-        icon="🧭"
+        icon="compass"
         title="Page not found"
         description="That page does not exist."
         action={
@@ -70,6 +72,22 @@ export function App() {
         }
       />
       <Route
+        path="/profile"
+        element={
+          <RequireAuth>
+            <MyProfile />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/skills"
+        element={
+          <RequireAuth>
+            <MySkills />
+          </RequireAuth>
+        }
+      />
+      <Route
         path="/pathways"
         element={
           <RequireAuth>
@@ -86,18 +104,19 @@ export function App() {
         }
       />
       <Route
-        path="/progress"
+        path="/journey"
         element={
           <RequireAuth>
-            <Progress />
+            <Journey />
           </RequireAuth>
         }
       />
+      <Route path="/progress" element={<Navigate to="/journey" replace />} />
       <Route
-        path="/admin"
+        path="/admin/:section?"
         element={
           <RequireAuth>
-            <AdminDashboard />
+            <AdminConsole />
           </RequireAuth>
         }
       />

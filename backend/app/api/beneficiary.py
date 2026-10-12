@@ -223,7 +223,7 @@ def extract(payload: ProfileExtractRequest, user: CurrentUser, db: DbSession) ->
         is_code_switched=result.is_code_switched,
         extraction=result.to_summary(),
         filled_slots=sorted(result.filled_slots()),
-        extractor=extractor.name,
+        extractor=result.extractor,
     )
 
 

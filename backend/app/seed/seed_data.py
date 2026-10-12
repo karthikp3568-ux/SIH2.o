@@ -424,8 +424,36 @@ def seed_users(db: Session) -> dict[str, User]:
 # ---------------------------------------------------------------------------
 
 
+#: Nullable columns added after the initial schema. `create_all` never alters
+#: an existing table, so a database created earlier gets them here; Alembic
+#: revision 3c1f2a7b9d10 carries the same change for migrated deployments.
+_ADDITIVE_COLUMNS: list[tuple[str, str, str]] = [
+    ("conversation_messages", "client_message_id", "VARCHAR(64)"),
+    ("conversation_messages", "response_snapshot", "JSON"),
+]
+_ADDITIVE_INDEXES: list[tuple[str, str, str]] = [
+    (
+        "ix_message_conversation_client_id",
+        "conversation_messages",
+        "conversation_id, client_message_id",
+    ),
+]
+
+
 def create_all_tables(engine) -> None:
+    from sqlalchemy import inspect, text  # noqa: PLC0415
+
     Base.metadata.create_all(bind=engine)
+    inspector = inspect(engine)
+    with engine.begin() as connection:
+        for table, column, sql_type in _ADDITIVE_COLUMNS:
+            existing = {c["name"] for c in inspector.get_columns(table)}
+            if column not in existing:
+                connection.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {sql_type}"))
+                logger.info("Added column %s.%s", table, column)
+        for name, table, columns in _ADDITIVE_INDEXES:
+            if name not in {i["name"] for i in inspector.get_indexes(table)}:
+                connection.execute(text(f"CREATE UNIQUE INDEX IF NOT EXISTS {name} ON {table} ({columns})"))
 
 
 def seed_database(db: Session, *, build_index: bool = True) -> dict:

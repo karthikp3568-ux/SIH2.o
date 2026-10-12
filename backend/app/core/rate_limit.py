@@ -52,7 +52,7 @@ def _consume(key: str, limit: int) -> None:
             retry_after = max(1, int(_WINDOW_SECONDS - (now - window[0])))
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail="Too many requests. Please wait a moment and try again.",
+                detail=f"Too many attempts from this device. Please wait {retry_after} seconds and try again.",
                 headers={"Retry-After": str(retry_after)},
             )
         window.append(now)
@@ -77,5 +77,6 @@ def reset_rate_limits() -> None:
 
 
 auth_rate_limit = rate_limiter("auth", settings.rate_limit_auth_per_minute)
+register_rate_limit = rate_limiter("register", settings.rate_limit_register_per_minute)
 conversation_rate_limit = rate_limiter("conversation", settings.rate_limit_conversation_per_minute)
 default_rate_limit = rate_limiter("default", settings.rate_limit_default_per_minute)

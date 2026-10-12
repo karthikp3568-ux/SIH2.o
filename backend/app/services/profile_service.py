@@ -48,6 +48,8 @@ from .profile_extraction import ExtractionResult
 EMPTY_DRAFT: dict[str, Any] = {
     "education": None,
     "occupations": [],
+    #: Work the person said they stopped doing - kept, but never "current".
+    "previous_occupations": [],
     "skills": [],
     "interests": [],
     "goals": [],
@@ -58,6 +60,9 @@ EMPTY_DRAFT: dict[str, Any] = {
     "age": None,
     "target_income": None,
     "location": None,
+    #: Facts a later answer contradicted, kept so the confirmation step can
+    #: show what changed instead of silently overwriting it.
+    "conflicts": [],
 }
 
 
@@ -67,11 +72,33 @@ def new_draft() -> dict[str, Any]:
     }
 
 
+#: A newly stated fact at least this confident replaces an earlier one -
+#: people correct themselves as they talk.
+REPLACE_CONFIDENCE = 0.75
+
+
 def _better(existing: dict | None, incoming: dict) -> bool:
-    """Later statements win ties - people correct themselves as they talk."""
+    """Later statements win ties; a confident new statement is a correction."""
     if existing is None:
         return True
-    return incoming.get("confidence", 0) >= existing.get("confidence", 0)
+    incoming_confidence = incoming.get("confidence", 0)
+    return incoming_confidence >= existing.get("confidence", 0) or incoming_confidence >= REPLACE_CONFIDENCE
+
+
+def _replace_scalar(draft: dict[str, Any], key: str, incoming: dict) -> None:
+    """Set a single-valued fact, recording a contradiction rather than hiding it."""
+    existing = draft.get(key)
+    if not _better(existing, incoming):
+        return
+    if existing and existing.get("value") != incoming.get("value") and existing.get("value") is not None:
+        draft.setdefault("conflicts", []).append(
+            {
+                "field": key,
+                "previous": existing.get("label") or existing.get("value"),
+                "new": incoming.get("label") or incoming.get("value"),
+            }
+        )
+    draft[key] = incoming
 
 
 def merge_extraction(draft: dict[str, Any], extraction: ExtractionResult) -> dict[str, Any]:
@@ -81,14 +108,18 @@ def merge_extraction(draft: dict[str, Any], extraction: ExtractionResult) -> dic
     """
     draft = deepcopy({**new_draft(), **(draft or {})})
 
-    if extraction.education and _better(draft.get("education"), extraction.education.as_dict()):
-        draft["education"] = {
-            **extraction.education.as_dict(),
-            "label": EDUCATION_LABEL.get(str(extraction.education.value), str(extraction.education.value)),
-        }
+    if extraction.education:
+        _replace_scalar(
+            draft,
+            "education",
+            {
+                **extraction.education.as_dict(),
+                "label": EDUCATION_LABEL.get(str(extraction.education.value), str(extraction.education.value)),
+            },
+        )
 
-    if extraction.mobility and _better(draft.get("mobility"), extraction.mobility.as_dict()):
-        draft["mobility"] = extraction.mobility.as_dict()
+    if extraction.mobility:
+        _replace_scalar(draft, "mobility", extraction.mobility.as_dict())
 
     for key, fact in (
         ("max_travel_km", extraction.max_travel_km),
@@ -96,14 +127,28 @@ def merge_extraction(draft: dict[str, Any], extraction: ExtractionResult) -> dic
         ("age", extraction.age),
         ("target_income", extraction.target_income),
     ):
-        if fact and _better(draft.get(key), fact.as_dict()):
-            draft[key] = fact.as_dict()
+        if fact:
+            _replace_scalar(draft, key, fact.as_dict())
+
+    # "I stopped farming" moves farming out of current work; it is not lost.
+    stopped = {o.value for o in extraction.previous_occupations}
+    if stopped:
+        known_previous = {o["value"] for o in draft["previous_occupations"]}
+        for occupation in extraction.previous_occupations:
+            if occupation.value not in known_previous:
+                draft["previous_occupations"].append(occupation.as_dict())
+                known_previous.add(occupation.value)
+        draft["occupations"] = [o for o in draft["occupations"] if o["value"] not in stopped]
 
     existing_occupations = {o["value"] for o in draft["occupations"]}
     for occupation in extraction.occupations:
         if occupation.value not in existing_occupations:
             draft["occupations"].append(occupation.as_dict())
             existing_occupations.add(occupation.value)
+            # Taking the work up again un-retires it.
+            draft["previous_occupations"] = [
+                o for o in draft["previous_occupations"] if o["value"] != occupation.value
+            ]
 
     existing_interests = {i["value"] for i in draft["interests"]}
     for interest in extraction.interests:

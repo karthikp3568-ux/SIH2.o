@@ -4,9 +4,12 @@ from __future__ import annotations
 
 import logging
 import secrets
+import threading
+from collections import defaultdict
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
+from sqlalchemy.exc import IntegrityError
 
 from ..config import get_settings
 from ..core.enums import LANGUAGE_BCP47, Channel
@@ -34,6 +37,12 @@ from ..services.recommendation import generate_recommendations
 router = APIRouter(prefix="/conversation", tags=["conversation"])
 logger = logging.getLogger(__name__)
 settings = get_settings()
+
+#: One turn at a time per conversation within this process, so two requests
+#: cannot read the same draft and overwrite each other's facts. Across
+#: processes the unique (conversation_id, client_message_id) index and the
+#: row lock on PostgreSQL provide the same guarantee.
+_turn_locks: defaultdict[str, threading.Lock] = defaultdict(threading.Lock)
 
 
 def _slot_out(slot_name: str | None, language: str) -> SlotOut | None:
@@ -131,38 +140,65 @@ def send_message(
     beneficiary: CurrentBeneficiary,
     db: DbSession,
 ) -> MessageResponse:
-    conversation = db.get(Conversation, conversation_id)
-    if conversation is None or conversation.beneficiary_id != beneficiary.id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found")
-    if conversation.state == "confirmed":
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="This conversation is already confirmed. Start a new one to make changes.",
-        )
+    with _turn_locks[conversation_id]:
+        conversation = db.get(Conversation, conversation_id, with_for_update=True)
+        if conversation is None or conversation.beneficiary_id != beneficiary.id:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found")
+        if conversation.state == "confirmed":
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="This conversation is already confirmed. Start a new one to make changes.",
+            )
+        try:
+            result = engine.handle_message(
+                db,
+                conversation,
+                payload.text,
+                channel=str(payload.channel) if payload.channel else None,
+                language_hint=str(payload.language) if payload.language else None,
+                asr_confidence=payload.asr_confidence,
+                speech_provider=payload.speech_provider,
+                slot_answer=payload.slot_answer,
+                client_message_id=payload.client_message_id,
+                confirm_message_id=payload.confirm_message_id,
+            )
+        except IntegrityError:
+            # Another worker stored this client_message_id first: return its result.
+            db.rollback()
+            existing = (
+                engine.find_by_client_id(db, conversation, payload.client_message_id)
+                if payload.client_message_id
+                else None
+            )
+            result = engine.replay(conversation, existing) if existing is not None else None
+            if result is None:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="This message is already being processed.",
+                ) from None
 
-    result = engine.handle_message(
-        db,
-        conversation,
-        payload.text,
-        channel=str(payload.channel) if payload.channel else None,
-        language_hint=str(payload.language) if payload.language else None,
-        asr_confidence=payload.asr_confidence,
-        speech_provider=payload.speech_provider,
-        slot_answer=payload.slot_answer,
-    )
-
+    language = result.language or conversation.language
     return MessageResponse(
         conversation_id=conversation.id,
+        message_id=result.message_id,
+        client_message_id=payload.client_message_id,
+        language=language,
+        transcript=payload.text,
+        transcript_confidence=payload.asr_confidence,
         assistant_message=result.assistant_message,
-        pending_slot=_slot_out(
-            result.pending_slot.name if result.pending_slot else None, conversation.language
-        ),
+        next_question=result.assistant_message,
+        next_slot=result.pending_slot.name if result.pending_slot else None,
+        current_state="awaiting_confirmation" if result.ready_to_confirm else "active",
+        pending_slot=_slot_out(result.pending_slot.name if result.pending_slot else None, language),
         draft_profile=result.draft,
+        profile_update=result.understood,
         extraction=result.extraction.to_summary() if result.extraction else None,
         newly_filled=result.newly_filled,
         needs_confirmation=result.needs_confirmation,
         ready_to_confirm=result.ready_to_confirm,
         transcript_for_correction=result.transcript_for_correction,
+        clarification=result.clarification,
+        replayed=result.replayed,
         progress=result.progress,
     )
 

@@ -103,6 +103,8 @@ export interface DraftSkill {
 export interface DraftProfile {
   education?: ExtractedFact | null
   occupations?: ExtractedFact[]
+  /** Work the person said they stopped doing. */
+  previous_occupations?: ExtractedFact[]
   skills?: DraftSkill[]
   interests?: ExtractedFact[]
   goals?: ExtractedFact[]
@@ -115,16 +117,37 @@ export interface DraftProfile {
   location?: Record<string, unknown> | null
 }
 
+/** One fact a turn added, already worded by the server ("Pump repair"). */
+export interface UnderstoodFact {
+  slot: string
+  label: string
+}
+
 export interface MessageResponse {
   conversation_id: string
+  /** Server id of the stored beneficiary message. */
+  message_id: string | null
+  client_message_id: string | null
+  /** Language the assistant answered in. */
+  language: string
+  transcript: string
+  transcript_confidence: number | null
   assistant_message: string
+  next_question: string
+  next_slot: string | null
+  current_state: 'active' | 'awaiting_confirmation'
   pending_slot: Slot | null
   draft_profile: DraftProfile
+  profile_update: UnderstoodFact[]
   extraction: Record<string, unknown> | null
   newly_filled: string[]
   needs_confirmation: boolean
   ready_to_confirm: boolean
   transcript_for_correction: string | null
+  /** The answer was not understood and the question was asked differently. */
+  clarification: boolean
+  /** The stored result of an already-processed message id. */
+  replayed: boolean
   progress: Progress
 }
 

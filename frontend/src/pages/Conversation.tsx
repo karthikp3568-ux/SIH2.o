@@ -1,349 +1,614 @@
 /**
- * Screen 1 → the conversation itself.
+ * The voice conversation — the core of the product.
  *
- * Voice and text are equal paths, not a primary and a fallback. The recogniser's
- * confidence is forwarded to the backend; when it is low the backend asks for a
- * confirmation and we surface the transcript for correction rather than guessing.
+ * Voice and text are equal paths. The recogniser's confidence is forwarded to
+ * the backend; when it is low the backend asks for confirmation and we show
+ * the transcript for correction rather than guessing. Every fact the system
+ * extracts is shown against the sentence it came from.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
-import { api } from '../api/client'
+import { api, ApiError } from '../api/client'
+import type { ConversationMessage, DraftProfile, Slot, UnderstoodFact } from '../api/types'
+import { ConversationCard } from '../components/ConversationCard'
+import type { Turn } from '../components/ConversationCard'
+import { Icon } from '../components/Icon'
+import type { IconName } from '../components/Icon'
 import { Layout } from '../components/Layout'
-import { Button, Card, Chip, ErrorState, Loading, Notice } from '../components/ui'
-import { useAction } from '../hooks/useAsync'
+import { Button, Chip, ErrorState, Loading } from '../components/ui'
+import { VoiceOrb } from '../components/voice/VoiceOrb'
+import type { VoiceState } from '../components/voice/VoiceOrb'
+import { useMicAnalyser } from '../hooks/useMicAnalyser'
+import { useSpeaker } from '../hooks/useSpeaker'
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition'
+import { LANGUAGE_NAME } from '../lib/labels'
 import { useApp } from '../state/AppContext'
-import type { ConversationMessage, DraftProfile, Slot } from '../api/types'
 
-interface Turn {
-  role: 'assistant' | 'beneficiary'
-  text: string
-  meta?: string
+const SLOT_ICON: Record<string, IconName> = {
+  home: 'home',
+  bus: 'bus',
+  train: 'train',
+  briefcase: 'briefcase',
+  tools: 'wrench',
+  shop: 'store',
+  certificate: 'cap',
 }
+
+/** A fresh id per utterance, so a double-fired event cannot become two turns. */
+function newMessageId(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
+  return `m-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
+}
+
+const TRACKED: { key: string; label: string; icon: IconName; has: (d: DraftProfile) => boolean }[] = [
+  { key: 'work', label: 'Work', icon: 'sprout', has: (d) => (d.occupations?.length ?? 0) > 0 },
+  { key: 'skills', label: 'Skills', icon: 'wrench', has: (d) => (d.skills ?? []).some((s) => !s.is_category) },
+  { key: 'education', label: 'Education', icon: 'cap', has: (d) => Boolean(d.education?.value) },
+  { key: 'interests', label: 'Interests', icon: 'target', has: (d) => (d.interests?.length ?? 0) > 0 },
+  { key: 'goal', label: 'Goal', icon: 'flag', has: (d) => (d.goals?.length ?? 0) > 0 },
+  { key: 'travel', label: 'Travel', icon: 'bus', has: (d) => Boolean(d.mobility?.value) },
+]
+
+let turnSeq = 0
+const nextId = () => `t${(turnSeq += 1)}`
 
 export function Conversation() {
   const { conversationId } = useParams<{ conversationId: string }>()
   const [params] = useSearchParams()
-  const isDemo = params.get('demo') === '1'
+  const isGuided = params.get('demo') === '1'
+  const mode = params.get('mode')
   const navigate = useNavigate()
-  const { t, language, speechTag } = useApp()
+  const { t, language, speechTag, user } = useApp()
 
   const [turns, setTurns] = useState<Turn[]>([])
+  const [liveIds, setLiveIds] = useState<Set<string>>(new Set())
   const [pendingSlot, setPendingSlot] = useState<Slot | null>(null)
   const [draft, setDraft] = useState<DraftProfile>({})
-  const [progress, setProgress] = useState(0)
   const [readyToConfirm, setReadyToConfirm] = useState(false)
   const [pendingTranscript, setPendingTranscript] = useState<string | null>(null)
   const [textInput, setTextInput] = useState('')
   const [loadError, setLoadError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
-  const [demoStep, setDemoStep] = useState(0)
-  const [demoScript, setDemoScript] = useState<{ text: string; note: string }[]>([])
+  const [sending, setSending] = useState(false)
+  const [sendError, setSendError] = useState<string | null>(null)
+  const [detected, setDetected] = useState<{ language: string | null; confidence: number | null; heard: number | null } | null>(null)
+  /** What the last answer added, shown as "Added: …" until the next answer. */
+  const [lastAdded, setLastAdded] = useState<UnderstoodFact[]>([])
+  const [clarifying, setClarifying] = useState(false)
+  /** Server id of the low-confidence message awaiting confirmation. */
+  const [pendingMessageId, setPendingMessageId] = useState<string | null>(null)
+  const [readAloud, setReadAloud] = useState(false)
+  const [script, setScript] = useState<{ text: string; note: string }[]>([])
+  const [scriptStep, setScriptStep] = useState(0)
+  const [playback, setPlayback] = useState<string | null>(null)
 
-  const chatRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const streamRef = useRef<HTMLDivElement>(null)
+  const autoListened = useRef(false)
+  /** Guards against a second submission while one is in flight. */
+  const inFlight = useRef(false)
 
-  const send = useAction(
-    async (text: string, options: { asrConfidence?: number; slotAnswer?: string } = {}) => {
-      if (!conversationId) return undefined
-      const response = await api.sendMessage(conversationId, {
-        text,
-        language,
-        asr_confidence: options.asrConfidence,
-        speech_provider: options.asrConfidence !== undefined ? 'browser_web_speech' : undefined,
-        slot_answer: options.slotAnswer,
-      })
+  const speaker = useSpeaker()
 
-      setTurns((current) => [
-        ...current,
-        {
-          role: 'beneficiary',
+  const send = useCallback(
+    async (
+      text: string,
+      options: { asrConfidence?: number; slotAnswer?: string; confirmMessageId?: string } = {},
+    ) => {
+      if (!conversationId || !text.trim() || inFlight.current) return
+      inFlight.current = true
+      setSending(true)
+      setSendError(null)
+      setLastAdded([])
+      try {
+        const response = await api.sendMessage(conversationId, {
           text,
-          meta:
-            options.asrConfidence !== undefined
-              ? `heard with ${Math.round(options.asrConfidence * 100)}% confidence`
-              : undefined,
-        },
-        { role: 'assistant', text: response.assistant_message },
-      ])
-      setPendingSlot(response.pending_slot)
-      setDraft(response.draft_profile)
-      setProgress(response.progress.percent ?? 0)
-      setReadyToConfirm(response.ready_to_confirm)
-      setPendingTranscript(response.needs_confirmation ? response.transcript_for_correction : null)
-      return response
+          language,
+          asr_confidence: options.asrConfidence,
+          speech_provider: options.asrConfidence !== undefined ? 'browser_web_speech' : undefined,
+          slot_answer: options.slotAnswer,
+          client_message_id: newMessageId(),
+          confirm_message_id: options.confirmMessageId,
+        })
+        const extraction = response.extraction as { language?: string; language_confidence?: number } | null
+        const added = response.profile_update.map((fact) => fact.label)
+        const assistantTurn: Turn = {
+          id: nextId(),
+          role: 'assistant',
+          text: response.next_question || response.assistant_message,
+        }
+        if (options.confirmMessageId) {
+          // The confirmed transcript is the turn already on screen: update it.
+          setTurns((current) => {
+            const index = current.findIndex((turn) => turn.serverId === options.confirmMessageId)
+            if (index < 0) return [...current, assistantTurn]
+            const updated = [...current]
+            updated[index] = { ...updated[index], text, extracted: added }
+            return [...updated, assistantTurn]
+          })
+          setLiveIds((current) => new Set([...current, assistantTurn.id]))
+        } else {
+          const userTurn: Turn = {
+            id: nextId(),
+            serverId: response.message_id,
+            role: 'beneficiary',
+            text,
+            extracted: added,
+            heardConfidence: options.asrConfidence ?? null,
+            language: extraction?.language ?? null,
+          }
+          setTurns((current) => [...current, userTurn, assistantTurn])
+          setLiveIds((current) => new Set([...current, userTurn.id, assistantTurn.id]))
+        }
+        setDetected({
+          language: extraction?.language ?? null,
+          confidence: extraction?.language_confidence ?? null,
+          heard: options.asrConfidence ?? null,
+        })
+        setLastAdded(response.profile_update)
+        setClarifying(response.clarification)
+        setPendingSlot(response.pending_slot)
+        setDraft(response.draft_profile ?? {})
+        setReadyToConfirm(response.ready_to_confirm)
+        setPendingTranscript(response.needs_confirmation ? response.transcript_for_correction : null)
+        setPendingMessageId(response.needs_confirmation ? response.message_id : null)
+      } catch (error) {
+        setSendError(
+          error instanceof ApiError && error.status === 0
+            ? 'We could not reach the server. Check your connection — you can keep typing and send again.'
+            : 'We’re having trouble processing your response. You can continue by typing.',
+        )
+        setTextInput(text)
+      } finally {
+        inFlight.current = false
+        setSending(false)
+      }
     },
+    [conversationId, language],
   )
 
   const handleSpeech = useCallback(
     ({ transcript, confidence }: { transcript: string; confidence: number }) => {
-      if (!transcript) return
-      void send.run(transcript, { asrConfidence: confidence })
+      if (transcript) void send(transcript, { asrConfidence: confidence })
     },
     [send],
   )
 
   const speech = useSpeechRecognition(speechTag, handleSpeech)
+  const mic = useMicAnalyser(speech.listening)
 
+  const startListening = useCallback(() => {
+    speaker.cancel()
+    setSendError(null)
+    setPendingTranscript(null)
+    setPendingMessageId(null)
+    setLastAdded([])
+    speech.start()
+  }, [speaker, speech])
+
+  // --- load -----------------------------------------------------------------
   useEffect(() => {
     if (!conversationId) return
     setLoading(true)
     api
       .getConversation(conversationId)
       .then((conversation) => {
+        if (conversation.state === 'confirmed') {
+          navigate(`/confirm/${conversationId}`, { replace: true })
+          return
+        }
         setTurns(
           conversation.messages
             .filter((m: ConversationMessage) => m.role !== 'system')
             .map((m) => ({
+              id: nextId(),
+              serverId: m.id,
               role: m.role === 'assistant' ? 'assistant' : 'beneficiary',
               text: m.raw_text,
-              meta:
-                m.asr_confidence !== null
-                  ? `heard with ${Math.round(m.asr_confidence * 100)}% confidence`
-                  : undefined,
+              heardConfidence: m.asr_confidence,
+              language: m.detected_language,
             })),
         )
         setPendingSlot(conversation.pending_slot)
-        setDraft(conversation.draft_profile)
-        setProgress(conversation.progress?.percent ?? 0)
+        setDraft(conversation.draft_profile ?? {})
         setReadyToConfirm(conversation.state === 'awaiting_confirmation')
       })
-      .catch((error: Error) => setLoadError(error.message))
+      .catch(() => setLoadError('We could not open this conversation.'))
       .finally(() => setLoading(false))
-  }, [conversationId])
+  }, [conversationId, navigate])
 
   useEffect(() => {
-    if (!isDemo) return
+    if (!isGuided) return
     api
       .demoScript()
-      .then((script) => setDemoScript(script.english ?? []))
-      .catch(() => setDemoScript([]))
-  }, [isDemo])
+      .then((data) =>
+        setScript(
+          language === 'kn' && data.kannada?.length
+            ? data.kannada
+            : language === 'hi' && data.hindi?.length
+              ? data.hindi
+              : data.english ?? [],
+        ),
+      )
+      .catch(() => setScript([]))
+  }, [isGuided, language])
+
+  // Start listening straight away when the person chose to talk.
+  useEffect(() => {
+    if (loading || autoListened.current || mode !== 'voice' || !speech.supported) return
+    autoListened.current = true
+    startListening()
+  }, [loading, mode, speech.supported, startListening])
 
   useEffect(() => {
-    chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight, behavior: 'smooth' })
+    if (!loading && mode === 'text') inputRef.current?.focus()
+  }, [loading, mode])
+
+  const lastAssistant = useMemo(() => [...turns].reverse().find((turn) => turn.role === 'assistant'), [turns])
+
+  // Read each new question aloud when the person asked for it.
+  const spokenRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!readAloud || !lastAssistant || spokenRef.current === lastAssistant.id) return
+    spokenRef.current = lastAssistant.id
+    speaker.speak(lastAssistant.text, speechTag)
+  }, [readAloud, lastAssistant, speaker, speechTag])
+
+  useEffect(() => {
+    const el = streamRef.current
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
   }, [turns])
 
+  // --- actions ----------------------------------------------------------------
   const submitText = (event: React.FormEvent) => {
     event.preventDefault()
     const text = textInput.trim()
     if (!text) return
     setTextInput('')
-    void send.run(text)
+    void send(text)
   }
 
   const confirmTranscript = () => {
     if (!pendingTranscript) return
     const text = pendingTranscript
+    const messageId = pendingMessageId
     setPendingTranscript(null)
-    void send.run(text)
+    setPendingMessageId(null)
+    void send(text, { confirmMessageId: messageId ?? undefined })
   }
 
-  const correctTranscript = () => {
+  const typeInstead = () => {
     setTextInput(pendingTranscript ?? '')
     setPendingTranscript(null)
-    inputRef.current?.focus()
+    setPendingMessageId(null)
+    requestAnimationFrame(() => inputRef.current?.focus())
   }
 
-  const answerSlot = (value: string, label: string) => {
-    void send.run(label, { slotAnswer: value })
+  const playScriptLine = () => {
+    const line = script[scriptStep]
+    if (!line || playback !== null) return
+    setScriptStep((step) => step + 1)
+    const words = line.text.split(' ')
+    let shown = 0
+    setPlayback('')
+    const timer = window.setInterval(() => {
+      shown += 1
+      setPlayback(words.slice(0, shown).join(' '))
+      if (shown >= words.length) {
+        window.clearInterval(timer)
+        window.setTimeout(() => {
+          setPlayback(null)
+          void send(line.text)
+        }, 350)
+      }
+    }, 70)
   }
 
-  const playDemoStep = () => {
-    const line = demoScript[demoStep]
-    if (!line) return
-    setDemoStep((step) => step + 1)
-    void send.run(line.text)
-  }
-
+  // --- render -------------------------------------------------------------------
   if (loading) {
     return (
       <Layout>
-        <Loading label={t('common.loading')} />
+        <Loading label="Opening your conversation…" />
       </Layout>
     )
   }
-
   if (loadError) {
     return (
       <Layout>
-        <ErrorState message={loadError} onRetry={() => navigate('/')} retryLabel={t('common.back')} />
+        <ErrorState message={loadError} onRetry={() => navigate('/')} retryLabel="Back to start" />
       </Layout>
     )
   }
 
+  const orbState: VoiceState = sending
+    ? 'processing'
+    : speech.listening
+      ? 'listening'
+      : speaker.speaking
+        ? 'speaking'
+        : 'idle'
+  const liveTranscript = playback ?? speech.interimTranscript
+  const canReview = readyToConfirm || (draft.skills?.length ?? 0) > 0
+  const question = lastAssistant?.text ?? t('conversation.title')
+  const history = turns.slice(0, lastAssistant ? turns.lastIndexOf(lastAssistant) : turns.length)
+
+  const statusLine = sending
+    ? 'Understanding your response…'
+    : speech.listening
+      ? t('conversation.listening')
+      : speaker.speaking
+        ? 'Reading the question aloud…'
+        : playback !== null
+          ? 'Playing Ravi’s words…'
+          : speech.supported
+            ? 'Tap the microphone to answer'
+            : 'Type your answer below'
+
   return (
-    <Layout>
-      <div className="stack">
-        <div className="row row--between">
-          <h1 style={{ marginBottom: 0 }}>{t('conversation.title')}</h1>
-          <Chip icon="◔">{`${t('conversation.progress')}: ${progress}%`}</Chip>
-        </div>
-        <div className="progress-bar" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
-          <div className="progress-bar__fill" style={{ width: `${progress}%` }} />
-        </div>
+    <Layout bare>
+      <div className="container talk">
+        {/* ---- Stage: the orb and microphone ---- */}
+        <aside className="talk__stage" aria-label="Voice">
+          <div className="talk__orb">
+            <VoiceOrb
+              state={orbState}
+              getLevel={speech.listening ? mic.getLevel : speaker.getLevel}
+              getBands={mic.getBands}
+              size={280}
+              label={statusLine}
+            />
+          </div>
+          <p className="talk__status" role="status" aria-live="polite">
+            {statusLine}
+          </p>
 
-        {isDemo && demoScript.length > 0 ? (
-          <Notice tone="info" title="Demo mode">
-            <p className="small" style={{ marginBottom: 'var(--space-3)' }}>
-              These are Ravi's own words. Everything the system shows afterwards is computed from
-              them by the same code a live user goes through.
-            </p>
-            {demoStep < demoScript.length ? (
-              <Button variant="secondary" icon="▶" onClick={playDemoStep} loading={send.pending}>
-                Say line {demoStep + 1} of {demoScript.length}
-              </Button>
+          {speech.supported ? (
+            <button
+              type="button"
+              className={`mic-button ${speech.listening ? 'mic-button--on' : ''}`}
+              onClick={() => (speech.listening ? speech.stop() : startListening())}
+              disabled={sending || playback !== null}
+              aria-pressed={speech.listening}
+            >
+              <Icon name={speech.listening ? 'stop' : 'mic'} size={26} />
+              <span>{speech.listening ? t('conversation.stop') : t('conversation.tapToSpeak')}</span>
+            </button>
+          ) : null}
+
+          <div className="talk__signals">
+            {detected?.language ? (
+              <Chip icon="globe">Detected: {LANGUAGE_NAME[detected.language] ?? detected.language}</Chip>
             ) : (
-              <p className="small strong" style={{ margin: 0 }}>
-                Ravi has said everything. Continue below.
-              </p>
+              <Chip icon="globe">Speaking: {LANGUAGE_NAME[language] ?? language}</Chip>
             )}
-          </Notice>
-        ) : null}
+            {detected?.heard !== null && detected?.heard !== undefined ? (
+              <Chip icon="mic" tone={detected.heard >= 0.7 ? 'good' : 'warn'}>
+                Heard with {Math.round(detected.heard * 100)}% confidence
+              </Chip>
+            ) : null}
+            {speaker.supported ? (
+              <button
+                type="button"
+                className="chip chip--outline talk__toggle"
+                aria-pressed={readAloud}
+                onClick={() => {
+                  if (readAloud) speaker.cancel()
+                  setReadAloud((value) => !value)
+                }}
+              >
+                <Icon name={readAloud ? 'volume' : 'volumeOff'} size={14} />
+                {readAloud ? 'Reading questions aloud' : 'Read questions aloud'}
+              </button>
+            ) : null}
+          </div>
+        </aside>
 
-        <div className="chat" ref={chatRef} role="log" aria-live="polite" aria-label="Conversation">
-          {turns.map((turn, index) => (
-            <div key={index} className={`bubble bubble--${turn.role}`}>
-              {turn.text}
-              {turn.meta ? <span className="bubble__meta">{turn.meta}</span> : null}
-            </div>
-          ))}
-          {speech.interimTranscript ? (
-            <div className="bubble bubble--beneficiary" style={{ opacity: 0.6 }}>
-              {speech.interimTranscript}…
+        {/* ---- Main: the current question ---- */}
+        <section className="talk__main" aria-labelledby="current-question">
+          <ul className="understood-track" aria-label="What we have understood so far">
+            {TRACKED.map((item) => {
+              const done = item.has(draft)
+              return (
+                <li key={item.key} className={done ? 'is-done' : ''}>
+                  <Icon name={done ? 'check' : item.icon} size={14} strokeWidth={done ? 3 : 2} />
+                  {item.label}
+                  <span className="visually-hidden">{done ? ' — understood' : ' — not yet'}</span>
+                </li>
+              )
+            })}
+          </ul>
+
+          {lastAdded.length > 0 && !sending ? (
+            <div className="added-strip" role="status" aria-label="Added to your profile">
+              <span className="added-strip__label">
+                <Icon name="checkCircle" size={16} /> Added
+              </span>
+              {lastAdded.map((fact, index) => (
+                <span key={`${fact.slot}-${fact.label}`} className="added-strip__chip pop" style={{ animationDelay: `${index * 140}ms` }}>
+                  <Icon name="plus" size={12} strokeWidth={3} />
+                  {fact.label}
+                </span>
+              ))}
             </div>
           ) : null}
-          {send.pending ? <Loading label="Understanding…" /> : null}
-        </div>
 
-        {pendingTranscript ? (
-          <Notice tone="warn" title={t('conversation.heardLow')}>
-            <p className="strong" style={{ fontSize: '1.05rem' }}>&ldquo;{pendingTranscript}&rdquo;</p>
-            <div className="row">
-              <Button icon="✓" onClick={confirmTranscript}>
-                {t('conversation.useThis')}
-              </Button>
-              <Button variant="secondary" icon="✎" onClick={correctTranscript}>
-                {t('conversation.editText')}
-              </Button>
+          <div className={`question-card ${clarifying ? 'question-card--retry' : ''}`} key={lastAssistant?.id}>
+            <span className="eyebrow">
+              {clarifying ? (
+                <>
+                  <Icon name="refresh" size={14} /> Let’s try that another way
+                </>
+              ) : (
+                <>
+                  <Icon name="compass" size={14} /> {user?.full_name ? `For ${user.full_name.split(' ')[0]}` : 'Question'}
+                </>
+              )}
+            </span>
+            <h1 id="current-question" className="question-card__text">
+              {question}
+            </h1>
+            <p className="question-card__hint">
+              {pendingSlot?.help ?? 'You can speak naturally. No need to fill out a form.'}
+            </p>
+          </div>
+
+          {liveTranscript ? (
+            <div className="live-transcript" aria-live="polite">
+              <span className="eyebrow">{playback !== null ? 'Ravi says' : 'Hearing'}</span>
+              <p>
+                {liveTranscript}
+                <span className="live-transcript__caret" aria-hidden="true" />
+              </p>
             </div>
-          </Notice>
-        ) : null}
+          ) : null}
 
-        {pendingSlot && pendingSlot.options.length > 0 ? (
-          <Card>
-            <h3>{pendingSlot.question}</h3>
-            {pendingSlot.help ? <p className="small muted">{pendingSlot.help}</p> : null}
-            <div className="choice-grid">
+          {speech.error === 'no-speech' || speech.error === 'network' || speech.error === 'other' ? (
+            <ErrorState
+              title="We couldn’t hear that clearly."
+              message={
+                speech.error === 'network'
+                  ? 'Voice recognition needs a connection right now. You can try again, or type below.'
+                  : 'Try again a little closer to the microphone, or type your answer below.'
+              }
+              onRetry={startListening}
+            />
+          ) : null}
+          {speech.error === 'not-allowed' ? (
+            <ErrorState title="Microphone is blocked" message={t('conversation.micDenied')} />
+          ) : null}
+
+          {pendingTranscript ? (
+            <div className="confirm-card enter" role="alert">
+              <span className="eyebrow">
+                <Icon name="alert" size={14} /> I’m not sure I heard that clearly
+              </span>
+              <p className="confirm-card__quote">“{pendingTranscript}”</p>
+              <p className="small muted" style={{ margin: '0 0 var(--space-3)' }}>
+                Is this what you said?
+              </p>
+              <div className="row">
+                <Button icon="check" onClick={confirmTranscript} disabled={sending}>
+                  Yes, that’s right
+                </Button>
+                {speech.supported ? (
+                  <Button variant="secondary" icon="mic" onClick={startListening} disabled={sending}>
+                    Try again
+                  </Button>
+                ) : null}
+                <Button variant="ghost" icon="keyboard" onClick={typeInstead} disabled={sending}>
+                  Type instead
+                </Button>
+              </div>
+            </div>
+          ) : null}
+
+          {pendingSlot && pendingSlot.options.length > 0 && !pendingTranscript ? (
+            <div className="slot-options" role="group" aria-label={pendingSlot.question}>
               {pendingSlot.options.map((option) => (
                 <button
                   key={option.value}
                   type="button"
                   className="choice"
-                  onClick={() => answerSlot(option.value, option.label)}
-                  disabled={send.pending}
+                  onClick={() => void send(option.label, { slotAnswer: option.value })}
+                  disabled={sending}
                 >
-                  <span className="choice__icon" aria-hidden="true">
-                    {option.icon === 'home'
-                      ? '🏠'
-                      : option.icon === 'bus'
-                        ? '🚌'
-                        : option.icon === 'train'
-                          ? '🚆'
-                          : option.icon === 'briefcase'
-                            ? '💼'
-                            : option.icon === 'tools'
-                              ? '🛠️'
-                              : option.icon === 'shop'
-                                ? '🏪'
-                                : option.icon === 'certificate'
-                                  ? '🎓'
-                                  : '•'}
+                  <span className="icon-tile icon-tile--sm icon-tile--blue">
+                    <Icon name={SLOT_ICON[option.icon ?? ''] ?? 'chevronRight'} size={18} />
                   </span>
-                  <span>{option.label}</span>
+                  {option.label}
                 </button>
               ))}
             </div>
-          </Card>
-        ) : null}
-
-        <Card>
-          {!speech.supported ? (
-            <Notice tone="warn">
-              <p className="small" style={{ margin: 0 }}>
-                {t('conversation.micUnsupported')}
-              </p>
-            </Notice>
-          ) : null}
-          {speech.error === 'not-allowed' ? (
-            <Notice tone="warn">
-              <p className="small" style={{ margin: 0 }}>
-                {t('conversation.micDenied')}
-              </p>
-            </Notice>
-          ) : null}
-          {speech.error === 'no-speech' ? (
-            <Notice tone="warn">
-              <p className="small" style={{ margin: 0 }}>
-                We did not hear anything. Try again, or type below.
-              </p>
-            </Notice>
           ) : null}
 
-          <div className="row" style={{ marginBottom: 'var(--space-4)', marginTop: 'var(--space-3)' }}>
-            {speech.supported ? (
-              <button
-                type="button"
-                className="btn btn--mic btn--lg"
-                data-listening={speech.listening}
-                onClick={() => (speech.listening ? speech.stop() : speech.start())}
-                disabled={send.pending}
-              >
-                <span aria-hidden="true">{speech.listening ? '■' : '🎙'}</span>
-                {speech.listening ? t('conversation.stop') : t('conversation.tapToSpeak')}
-              </button>
-            ) : null}
-            {speech.listening ? (
-              <span className="muted small" role="status">
-                {t('conversation.listening')}
-              </span>
-            ) : null}
-          </div>
+          {isGuided && script.length > 0 ? (
+            <div className="presenter">
+              <div className="grow">
+                <span className="eyebrow">
+                  <Icon name="play" size={12} /> Guided example
+                </span>
+                <p className="small" style={{ margin: '4px 0 0' }}>
+                  {scriptStep < script.length
+                    ? `Play Ravi’s own words (${scriptStep + 1} of ${script.length}). Everything after is computed live.`
+                    : 'Ravi has said everything. Review what we understood.'}
+                </p>
+              </div>
+              {scriptStep < script.length ? (
+                <Button variant="dark" size="sm" icon="play" onClick={playScriptLine} disabled={sending || playback !== null}>
+                  Play line {scriptStep + 1}
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
 
-          <form onSubmit={submitText}>
-            <label htmlFor="message">{t('conversation.placeholder')}</label>
+          <form className="composer" onSubmit={submitText}>
+            <label htmlFor="message" className="visually-hidden">
+              {t('conversation.placeholder')}
+            </label>
             <textarea
               id="message"
               ref={inputRef}
               value={textInput}
               onChange={(event) => setTextInput(event.target.value)}
-              placeholder={t('conversation.placeholder')}
-              rows={3}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                  event.preventDefault()
+                  event.currentTarget.form?.requestSubmit()
+                }
+              }}
+              placeholder="Or type your answer here…"
+              rows={2}
             />
-            <div className="row row--between" style={{ marginTop: 'var(--space-3)' }}>
-              <Button type="submit" icon="➤" loading={send.pending} disabled={!textInput.trim()}>
-                {t('conversation.send')}
-              </Button>
-              {(readyToConfirm || (draft.skills?.length ?? 0) > 0) && conversationId ? (
-                <Button
-                  variant={readyToConfirm ? 'primary' : 'secondary'}
-                  icon="✓"
-                  onClick={() => navigate(`/confirm/${conversationId}`)}
-                >
-                  {t('conversation.done')}
-                </Button>
-              ) : null}
-            </div>
+            <Button type="submit" icon="send" loading={sending} disabled={!textInput.trim()} aria-label={t('conversation.send')}>
+              <span className="composer__send-label">{t('conversation.send')}</span>
+            </Button>
           </form>
 
-          {send.error ? (
-            <p className="small" style={{ color: 'var(--red-700)', marginTop: 'var(--space-3)' }}>
-              {send.error}
-            </p>
+          {sendError ? <ErrorState title="That did not go through" message={sendError} /> : null}
+
+          {canReview && conversationId ? (
+            <div className={`continue-bar ${readyToConfirm ? 'continue-bar--ready' : ''}`}>
+              <div className="grow">
+                <strong>{readyToConfirm ? 'We have what we need.' : 'You can review at any time.'}</strong>
+                <div className="small muted">See what we understood, and correct anything before we continue.</div>
+              </div>
+              <Button
+                variant={readyToConfirm ? 'primary' : 'secondary'}
+                iconRight="arrowRight"
+                onClick={() => {
+                  speech.stop()
+                  speaker.cancel()
+                  navigate(`/confirm/${conversationId}`)
+                }}
+              >
+                Review what we understood
+              </Button>
+            </div>
           ) : null}
-        </Card>
+        </section>
+
+        {/* ---- Side: the conversation so far ---- */}
+        <aside className="talk__side" aria-label="Conversation so far">
+          <h2 className="eyebrow" style={{ marginBottom: 'var(--space-3)' }}>
+            Conversation so far
+          </h2>
+          <div className="talk__stream" ref={streamRef} role="log" aria-live="polite">
+            {history.length === 0 ? (
+              <p className="small muted">Your answers and what we understood from them will appear here.</p>
+            ) : (
+              history.map((turn) => <ConversationCard key={turn.id} turn={turn} animate={liveIds.has(turn.id)} />)
+            )}
+            {sending ? (
+              <div className="convo-card convo-card--thinking" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </div>
+            ) : null}
+          </div>
+        </aside>
       </div>
     </Layout>
   )

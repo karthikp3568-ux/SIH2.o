@@ -72,9 +72,17 @@ class ConversationMessage(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     needs_confirmation: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     audio_reference: Mapped[str | None] = mapped_column(String(300))
     audio_deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    #: Client-generated id for one utterance. A retried or duplicated request
+    #: carrying the same id returns the stored result instead of re-processing.
+    client_message_id: Mapped[str | None] = mapped_column(String(64))
+    #: The response this turn produced, replayed for duplicate submissions.
+    response_snapshot: Mapped[dict | None] = mapped_column(JSON)
 
     conversation: Mapped[Conversation] = relationship(back_populates="messages")
 
     __table_args__ = (
         Index("ix_message_conversation_seq", "conversation_id", "sequence", unique=True),
+        Index(
+            "ix_message_conversation_client_id", "conversation_id", "client_message_id", unique=True
+        ),
     )

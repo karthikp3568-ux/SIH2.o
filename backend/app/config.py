@@ -45,11 +45,17 @@ class Settings(BaseSettings):
     sql_echo: bool = False
 
     # --- providers ---
-    profile_extractor: Literal["rule_based", "llm"] = "rule_based"
+    #: semantic   -> LLM when configured, else the multilingual embedding model,
+    #:               with the lexicon only as a last resort (default)
+    #: llm / rule_based -> force one layer, for debugging and tests
+    profile_extractor: Literal["semantic", "rule_based", "llm"] = "semantic"
+    #: Multilingual sentence encoder used for offline semantic understanding.
+    #: LaBSE covers Kannada, Hindi, Tamil, Telugu, Marathi, Bengali and English.
+    semantic_model: str = "sentence-transformers/LaBSE"
     embedding_provider: Literal["local_hashing", "sentence_transformers"] = "local_hashing"
     embedding_dim: int = 512
     llm_provider: Literal["none", "anthropic", "openai_compatible"] = "none"
-    llm_model: str = "claude-sonnet-5"
+    llm_model: str = "claude-opus-5-5"
     anthropic_api_key: str = ""
     openai_api_key: str = ""
     openai_base_url: str = "https://api.openai.com/v1"
@@ -75,10 +81,19 @@ class Settings(BaseSettings):
 
     # --- conversation ---
     asr_confidence_threshold: float = 0.65
+    #: Between the threshold and this value a transcript is used, but the facts
+    #: it yields carry reduced confidence for the confirmation screen.
+    asr_moderate_confidence: float = 0.8
+    #: Misunderstood answers to one question before moving on rather than looping.
+    max_clarifications_per_slot: int = 1
 
     # --- rate limiting ---
     rate_limit_enabled: bool = True
+    #: Sign-in attempts per minute (brute-force protection).
     rate_limit_auth_per_minute: int = 10
+    #: Account creations per minute. Separate from sign-in, so a few rejected
+    #: sign-up attempts cannot lock a shared device out of signing in, or vice versa.
+    rate_limit_register_per_minute: int = 20
     rate_limit_conversation_per_minute: int = 40
     rate_limit_default_per_minute: int = 120
 

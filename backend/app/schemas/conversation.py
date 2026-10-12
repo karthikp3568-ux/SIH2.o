@@ -80,18 +80,47 @@ class MessageRequest(BaseModel):
     speech_provider: str | None = Field(default=None, max_length=32)
     #: Set when the user tapped one of the options for the pending slot.
     slot_answer: str | None = Field(default=None, max_length=64)
+    #: Client-generated id for this utterance. Sending the same id twice (a
+    #: double-fired speech event, a network retry) returns the first result.
+    client_message_id: str | None = Field(default=None, min_length=8, max_length=64)
+    #: Id of a low-confidence message the person has now confirmed, so it is
+    #: processed in place instead of being stored a second time.
+    confirm_message_id: str | None = Field(default=None, max_length=64)
+
+
+class UnderstoodFact(BaseModel):
+    slot: str
+    label: str
 
 
 class MessageResponse(BaseModel):
     conversation_id: str
+    #: Server id of the stored beneficiary message.
+    message_id: str | None = None
+    client_message_id: str | None = None
+    #: Language the assistant answered in.
+    language: str = "en"
+    transcript: str = ""
+    transcript_confidence: float | None = None
     assistant_message: str
+    #: Same text as assistant_message; the question to show and speak next.
+    next_question: str = ""
+    next_slot: str | None = None
+    #: active | awaiting_confirmation
+    current_state: str = "active"
     pending_slot: SlotOut | None = None
     draft_profile: dict[str, Any]
+    #: What this turn added, already worded for display ("+ Pump repair").
+    profile_update: list[UnderstoodFact] = Field(default_factory=list)
     extraction: dict[str, Any] | None = None
     newly_filled: list[str] = Field(default_factory=list)
     needs_confirmation: bool = False
     ready_to_confirm: bool = False
     transcript_for_correction: str | None = None
+    #: True when the answer was not understood and the question was rephrased.
+    clarification: bool = False
+    #: True when this is the stored result of an already-processed message id.
+    replayed: bool = False
     progress: dict[str, Any] = Field(default_factory=dict)
 
 

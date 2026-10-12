@@ -59,7 +59,7 @@ export function SystemInfo() {
                 Version {data.version} · {data.environment} · {data.database}
               </p>
             </div>
-            {data.demo_mode ? <Chip tone="warn" icon="▶">Demo mode</Chip> : null}
+            {data.demo_mode ? <Chip tone="warn" icon="play">Demo mode</Chip> : null}
           </div>
         </Card>
 
@@ -73,7 +73,7 @@ export function SystemInfo() {
                   className="row row--between"
                   style={{
                     padding: 'var(--space-3)',
-                    background: 'var(--grey-050)',
+                    background: 'var(--surface-2)',
                     borderRadius: 'var(--radius)',
                     alignItems: 'flex-start',
                   }}
@@ -81,7 +81,7 @@ export function SystemInfo() {
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div className="row" style={{ gap: 'var(--space-2)' }}>
                       <strong>{provider.name}</strong>
-                      {provider.is_offline_default ? <Chip icon="⚙">works offline</Chip> : null}
+                      {provider.is_offline_default ? <Chip icon="power">works offline</Chip> : null}
                     </div>
                     <p className="small muted" style={{ margin: '4px 0 0' }}>
                       {provider.detail}

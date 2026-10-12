@@ -76,33 +76,48 @@ export function useSpeechRecognition(languageTag: string, onResult: Handler): Us
     // Alternatives let the UI offer a correction rather than guessing again.
     recognition.maxAlternatives = 3
 
-    recognition.onstart = () => setListening(true)
+    // One utterance, one submission. With continuous=false a session yields a
+    // single final result, but some engines (Chrome on Android in particular)
+    // fire it twice, and a session stopped by start() can still deliver late.
+    // Both would otherwise reach the backend as a second, duplicate turn.
+    let delivered = false
+    const isCurrent = () => recognitionRef.current === recognition
+
+    recognition.onstart = () => {
+      if (isCurrent()) setListening(true)
+    }
 
     recognition.onresult = (event: any) => {
+      if (!isCurrent()) return
       let interim = ''
       for (let i = event.resultIndex; i < event.results.length; i += 1) {
         const result = event.results[i]
         const alternative = result[0]
         if (result.isFinal) {
-          onResultRef.current({
-            transcript: String(alternative.transcript ?? '').trim(),
-            // Some engines omit confidence entirely. 0.8 is a neutral stand-in,
-            // deliberately above the confirmation threshold so we do not nag,
-            // and it is never presented as a measured value.
-            confidence:
-              typeof alternative.confidence === 'number' && alternative.confidence > 0
-                ? alternative.confidence
-                : 0.8,
-          })
+          const transcript = String(alternative.transcript ?? '').trim()
+          if (!delivered && transcript) {
+            delivered = true
+            onResultRef.current({
+              transcript,
+              // Some engines omit confidence entirely. 0.8 is a neutral stand-in,
+              // deliberately above the confirmation threshold so we do not nag,
+              // and it is never presented as a measured value.
+              confidence:
+                typeof alternative.confidence === 'number' && alternative.confidence > 0
+                  ? alternative.confidence
+                  : 0.8,
+            })
+          }
           interim = ''
         } else {
           interim += alternative.transcript
         }
       }
-      setInterim(interim)
+      setInterim(delivered ? '' : interim)
     }
 
     recognition.onerror = (event: any) => {
+      if (!isCurrent()) return
       const code = String(event?.error ?? 'other')
       if (code === 'not-allowed' || code === 'service-not-allowed') setError('not-allowed')
       else if (code === 'no-speech') setError('no-speech')
@@ -112,6 +127,7 @@ export function useSpeechRecognition(languageTag: string, onResult: Handler): Us
     }
 
     recognition.onend = () => {
+      if (!isCurrent()) return
       setListening(false)
       setInterim('')
     }

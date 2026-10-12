@@ -21,7 +21,7 @@ os.environ.update(
         "DEMO_MODE": "true",
         "RATE_LIMIT_ENABLED": "false",
         "SECRET_KEY": "test-secret-key-not-used-anywhere-else-0123456789",
-        "PROFILE_EXTRACTOR": "rule_based",
+        "PROFILE_EXTRACTOR": "semantic",
         "LLM_PROVIDER": "none",
         "EMBEDDING_PROVIDER": "local_hashing",
         "SPEECH_PROVIDER": "mock",

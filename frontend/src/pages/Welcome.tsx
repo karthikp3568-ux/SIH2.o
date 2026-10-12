@@ -1,129 +1,211 @@
+/**
+ * Landing screen.
+ *
+ * One primary action — start talking — with typing as an equal second path.
+ * The orb here is idle (it breathes); it only reacts to sound once the
+ * conversation screen is actually listening.
+ */
+
 import { useNavigate } from 'react-router-dom'
 
 import { api } from '../api/client'
+import { Icon } from '../components/Icon'
+import type { IconName } from '../components/Icon'
 import { Layout } from '../components/Layout'
-import { Button, Card, Notice } from '../components/ui'
+import { Button } from '../components/ui'
+import { VoiceOrb } from '../components/voice/VoiceOrb'
 import { useAction, useAsync } from '../hooks/useAsync'
 import { useApp } from '../state/AppContext'
+
+const FEATURED_LANGUAGES = ['kn', 'hi', 'en', 'ta', 'te', 'mr']
+
+const PROMISES: { icon: IconName; title: string; body: string }[] = [
+  {
+    icon: 'edit',
+    title: 'You check everything',
+    body: 'Nothing we understood is saved until you confirm it — and you can change any of it.',
+  },
+  {
+    icon: 'shield',
+    title: 'Only checked opportunities',
+    body: 'Every listing shows where it came from and when it was last verified.',
+  },
+  {
+    icon: 'info',
+    title: 'Every suggestion explained',
+    body: 'Each pathway says why it fits you, and what you would still need.',
+  },
+]
+
+const JOURNEY: { icon: IconName; title: string; body: string }[] = [
+  { icon: 'mic', title: 'Voice', body: 'Say what you do, in your language' },
+  { icon: 'user', title: 'Profile', body: 'Check what we understood' },
+  { icon: 'graph', title: 'Skill gap', body: 'See what you have, and what’s next' },
+  { icon: 'route', title: 'Pathway', body: 'Verified training and work nearby' },
+  { icon: 'sprout', title: 'Livelihood', body: 'Follow through, step by step' },
+]
 
 export function Welcome() {
   const { t, isAuthenticated, user, adoptSession, setLanguage, language, languages } = useApp()
   const navigate = useNavigate()
-  const { data: status } = useAsync(() => api.status(), [])
+  const status = useAsync(() => api.status(), [])
+  const demoMode = status.data?.demo_mode ?? false
 
-  const demo = useAction(async () => {
+  const demo = useAction(async (mode: 'voice' | 'text' | 'guided') => {
     const session = await api.demoReset()
     adoptSession({ user: session.user, tokens: session.tokens })
-    navigate(`/conversation/${session.conversation_id}?demo=1`)
+    const query = mode === 'guided' ? 'demo=1' : `mode=${mode}`
+    navigate(`/conversation/${session.conversation_id}?${query}`)
   })
 
-  const startOwn = (mode: 'voice' | 'text') => {
-    if (!isAuthenticated) {
-      navigate(`/signin?next=/start&mode=${mode}`)
+  const start = (mode: 'voice' | 'text') => {
+    if (isAuthenticated && user?.role === 'beneficiary') {
+      navigate(`/start?mode=${mode}&fresh=1`)
       return
     }
-    navigate(`/start?mode=${mode}`)
+    if (!isAuthenticated && demoMode) {
+      void demo.run(mode)
+      return
+    }
+    navigate(`/signin?next=${encodeURIComponent(`/start?mode=${mode}&fresh=1`)}`)
   }
 
+  const featured = FEATURED_LANGUAGES.map((code) => languages.find((l) => l.code === code)).filter(
+    (l): l is NonNullable<typeof l> => Boolean(l),
+  )
+  const others = languages.filter((l) => !FEATURED_LANGUAGES.includes(l.code))
+
   return (
-    <Layout>
-      <div className="stack-lg">
-        <section className="center stack" style={{ paddingTop: 'var(--space-5)' }}>
-          <h1 style={{ fontSize: '2.2rem' }}>{t('welcome.title')}</h1>
-          <p style={{ fontSize: '1.1rem', maxWidth: 640, margin: '0 auto' }} className="muted">
-            {t('welcome.subtitle')}
-          </p>
-        </section>
+    <Layout bare>
+      <section className="hero">
+        <div className="container hero__inner">
+          <div className="hero__copy enter">
+            <span className="eyebrow">
+              <span className="hero__dot" aria-hidden="true" /> Que Sera · Livelihood Navigator
+            </span>
+            <h1 className="hero__title">{t('welcome.hero')}</h1>
+            <p className="hero__lead">{t('welcome.subtitle')}</p>
 
-        <section aria-labelledby="lang-heading" className="card">
-          <h3 id="lang-heading" style={{ marginBottom: 'var(--space-3)' }}>
-            {t('welcome.language')}
-          </h3>
-          <div className="choice-grid grid--4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
-            {languages.map((option) => (
-              <button
-                key={option.code}
-                type="button"
-                className="choice"
-                aria-pressed={language === option.code}
-                onClick={() => setLanguage(option.code)}
-              >
-                <span className="choice__icon" aria-hidden="true">
-                  🗣
-                </span>
-                <span>{option.label}</span>
-              </button>
-            ))}
+            <div className="hero__actions">
+              <Button size="lg" icon="mic" onClick={() => start('voice')} loading={demo.pending}>
+                {t('welcome.speak')}
+              </Button>
+              <Button size="lg" variant="secondary" icon="keyboard" onClick={() => start('text')}>
+                {t('welcome.type')}
+              </Button>
+            </div>
+            {demo.error ? (
+              <p className="small" role="alert" style={{ color: 'var(--red-600)', marginTop: 12 }}>
+                We could not start right now. Please try again in a moment.
+              </p>
+            ) : null}
+            {!isAuthenticated && demoMode ? (
+              <p className="tiny muted" style={{ marginTop: 12 }}>
+                Demo mode: you will continue as the sample beneficiary, Ravi.
+              </p>
+            ) : null}
+
+            <div className="hero__langs" role="group" aria-label={t('welcome.language')}>
+              {featured.map((option) => (
+                <button
+                  key={option.code}
+                  type="button"
+                  className="lang-pill"
+                  aria-pressed={language === option.code}
+                  onClick={() => setLanguage(option.code)}
+                  lang={option.code}
+                >
+                  {option.label}
+                </button>
+              ))}
+              {others.length > 0 ? (
+                <select
+                  className="lang-pill lang-pill--select"
+                  aria-label="More languages"
+                  value={others.some((o) => o.code === language) ? language : ''}
+                  onChange={(event) => event.target.value && setLanguage(event.target.value)}
+                >
+                  <option value="">More…</option>
+                  {others.map((option) => (
+                    <option key={option.code} value={option.code}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              ) : null}
+            </div>
           </div>
-        </section>
 
-        <section className="grid grid--2">
-          <Button size="lg" icon="🎙" onClick={() => startOwn('voice')} block>
-            {t('welcome.speak')}
-          </Button>
-          <Button size="lg" variant="secondary" icon="⌨" onClick={() => startOwn('text')} block>
-            {t('welcome.type')}
-          </Button>
-        </section>
+          <div className="hero__visual">
+            <button
+              type="button"
+              className="hero__orb-button"
+              onClick={() => start('voice')}
+              aria-label={t('welcome.speak')}
+            >
+              <VoiceOrb state="idle" size={340} label="Voice assistant, ready" />
+              <span className="hero__orb-mic" aria-hidden="true">
+                <Icon name="mic" size={30} />
+              </span>
+            </button>
+            <p className="hero__orb-caption">
+              “I work on my farm and sometimes repair water pumps…”
+            </p>
+          </div>
+        </div>
+      </section>
 
-        <Card className="center">
-          <h3>{t('welcome.demo')}</h3>
-          <p className="muted">{t('welcome.demoHint')}</p>
-          <Button
-            size="lg"
-            variant="secondary"
-            icon="▶"
-            onClick={() => demo.run()}
-            loading={demo.pending}
-          >
+      <section className="container journey-strip-wrap" aria-labelledby="journey-strip-title">
+        <h2 id="journey-strip-title" className="visually-hidden">
+          How it works
+        </h2>
+        <ol className="journey-strip">
+          {JOURNEY.map((step) => (
+            <li key={step.title} className="journey-strip__step">
+              <span className="journey-strip__icon" aria-hidden="true">
+                <Icon name={step.icon} size={22} />
+              </span>
+              <span className="journey-strip__title">{step.title}</span>
+              <span className="journey-strip__body">{step.body}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="container landing-lower">
+        <div className="demo-card">
+          <div className="demo-card__person" aria-hidden="true">
+            R
+          </div>
+          <div className="grow">
+            <span className="eyebrow">Guided example</span>
+            <h3 style={{ margin: '4px 0 6px' }}>Follow Ravi’s journey</h3>
+            <p className="small muted" style={{ margin: 0 }}>
+              A farmer in Nashik who repairs pumps. Play his own words and watch the profile, skill
+              gap and pathways build from them.
+            </p>
+          </div>
+          <Button variant="dark" icon="play" onClick={() => demo.run('guided')} loading={demo.pending}>
             {t('welcome.demo')}
           </Button>
-          {demo.error ? (
-            <p className="small" style={{ color: 'var(--red-700)', marginTop: 'var(--space-3)' }}>
-              {demo.error}
-            </p>
-          ) : null}
-          {isAuthenticated && user ? (
-            <p className="tiny muted" style={{ marginTop: 'var(--space-3)' }}>
-              Signed in as {user.full_name}
-            </p>
-          ) : null}
-        </Card>
+        </div>
 
-        <section className="card">
-          <h3>{t('welcome.how')}</h3>
-          <ol className="stack-sm" style={{ paddingLeft: '1.2rem', margin: 0 }}>
-            <li>{t('welcome.step1')}</li>
-            <li>{t('welcome.step2')}</li>
-            <li>{t('welcome.step3')}</li>
-            <li>{t('welcome.step4')}</li>
-          </ol>
-        </section>
-
-        <Notice tone="info" title="About your information">
-          <p style={{ margin: 0 }} className="small">
-            {t('welcome.privacy')}
-          </p>
-        </Notice>
-
-        {status ? (
-          <section className="card card--quiet">
-            <h4>What is real in this build</h4>
-            <p className="small muted">
-              We would rather tell you than let you assume. Voice recognition runs in your browser.
-              {status.capabilities.llm_assisted_extraction
-                ? ' Profile extraction is assisted by a language model.'
-                : ' Profile extraction uses deterministic rules, not a language model.'}
-              {status.capabilities.neural_embeddings
-                ? ' Retrieval uses neural embeddings.'
-                : ' Retrieval blends a local lexical vectoriser with keyword search and structured filters.'}
-            </p>
-            <p className="tiny muted" style={{ margin: 0 }}>
-              <a href="/system">See every data source and integration status →</a>
-            </p>
-          </section>
-        ) : null}
-      </div>
+        <ul className="promises">
+          {PROMISES.map((promise) => (
+            <li key={promise.title}>
+              <span className="icon-tile icon-tile--teal">
+                <Icon name={promise.icon} size={20} />
+              </span>
+              <div>
+                <h4 style={{ marginBottom: 4 }}>{promise.title}</h4>
+                <p className="small muted" style={{ margin: 0 }}>
+                  {promise.body}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
     </Layout>
   )
 }

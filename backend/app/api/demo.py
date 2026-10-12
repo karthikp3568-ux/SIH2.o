@@ -45,40 +45,46 @@ def _guard() -> None:
 
 #: The scripted utterances. Kept here rather than in the frontend so the demo
 #: and the tests exercise exactly the same input.
+#: One answer per question, in the order the engine asks them: work and
+#: skill -> how long -> schooling -> what next -> how far. Each later line is a
+#: short answer that only makes sense against the question just asked.
 RAVI_SCRIPT: list[dict] = [
     {
         "step": 1,
         "language": "en",
-        "text": (
-            "I work in agriculture and I repair pumps sometimes. I want to earn more. "
-            "I like mechanical work but I cannot travel very far."
-        ),
-        "note": "The opening utterance from the problem statement.",
+        "text": "I work in agriculture and repair pumps. I like mechanical work.",
+        "note": "Occupation, a skill and an interest in one sentence.",
     },
-    {
-        "step": 2,
-        "language": "en",
-        "text": "I have been repairing pumps and farm machinery for about 5 years. I am 10th pass.",
-        "note": "Adds duration and education.",
-    },
-    {
-        "step": 3,
-        "language": "en",
-        "text": "I would prefer to start my own work rather than a job.",
-        "note": "States the goal.",
-    },
+    {"step": 2, "language": "en", "text": "For several years.", "note": "Answers how long - no number is invented."},
+    {"step": 3, "language": "en", "text": "I completed 10th standard.", "note": "Education."},
+    {"step": 4, "language": "en", "text": "I want to start my own business.", "note": "Goal: self-employment."},
+    {"step": 5, "language": "en", "text": "No.", "note": "Answers the travel question: low mobility."},
 ]
 
 RAVI_SCRIPT_HI: list[dict] = [
     {
         "step": 1,
         "language": "hi",
-        "text": (
-            "मैं खेती का काम करता हूँ और कभी कभी पंप ठीक करता हूँ। मुझे ज्यादा कमाना है। "
-            "मुझे मशीन का काम पसंद है लेकिन मैं दूर नहीं जा सकता।"
-        ),
+        "text": "मैं खेती करता हूँ और मोटर पंप ठीक कर लेता हूँ। मुझे मशीन का काम पसंद है।",
         "note": "Same content in Hindi, to show the pipeline is language agnostic.",
     },
+    {"step": 2, "language": "hi", "text": "कई सालों से।", "note": "How long."},
+    {"step": 3, "language": "hi", "text": "मैंने दसवीं पास की है।", "note": "Education."},
+    {"step": 4, "language": "hi", "text": "मैं अपना खुद का काम शुरू करना चाहता हूँ।", "note": "Goal."},
+    {"step": 5, "language": "hi", "text": "नहीं, मैं दूर नहीं जा सकता।", "note": "Travel."},
+]
+
+RAVI_SCRIPT_KN: list[dict] = [
+    {
+        "step": 1,
+        "language": "kn",
+        "text": "ನಾನು ಕೃಷಿ ಕೆಲಸ ಮಾಡುತ್ತೇನೆ ಮತ್ತು ಪಂಪ್ ರಿಪೇರಿ ಮಾಡುತ್ತೇನೆ. ನನಗೆ ಯಂತ್ರಗಳ ಕೆಲಸ ಇಷ್ಟ.",
+        "note": "Same content in Kannada.",
+    },
+    {"step": 2, "language": "kn", "text": "ತುಂಬಾ ವರ್ಷಗಳಿಂದ.", "note": "How long."},
+    {"step": 3, "language": "kn", "text": "ನಾನು ಹತ್ತನೇ ತರಗತಿ ಓದಿದ್ದೇನೆ.", "note": "Education."},
+    {"step": 4, "language": "kn", "text": "ನನಗೆ ನನ್ನದೇ business ಶುರು ಮಾಡಬೇಕು.", "note": "Goal, code-switched."},
+    {"step": 5, "language": "kn", "text": "ನಾನು ತುಂಬಾ ದೂರ ಹೋಗಲು ಆಗುವುದಿಲ್ಲ.", "note": "Travel."},
 ]
 
 
@@ -91,13 +97,14 @@ def script() -> dict:
         "profile_summary": {
             "education": "10th standard",
             "occupation": "Agriculture / farm work",
-            "skills": ["pump repair", "farm machinery maintenance"],
+            "skills": ["pump repair"],
             "interests": ["mechanical"],
             "mobility": "low",
-            "goal": "self-employment, higher income",
+            "goal": "self-employment",
         },
         "english": RAVI_SCRIPT,
         "hindi": RAVI_SCRIPT_HI,
+        "kannada": RAVI_SCRIPT_KN,
         "mock_transcripts": MockSpeechProvider.SCRIPTS,
         "note": (
             "These are inputs, not outputs. The profile, skill gap and pathways shown "
@@ -218,7 +225,7 @@ def demo_status(db: DbSession) -> dict:
             "structure, not an authoritative extract.",
             "Opportunity records are curated demo listings, not live listings.",
             "Voice recognition runs in the browser (Chrome/Edge); other browsers use text input.",
-            "With no LLM configured, extraction and explanations are produced by deterministic "
-            "rules and templates.",
+            "With no LLM configured, understanding runs offline on a multilingual sentence "
+            "encoder (LaBSE); explanations are produced from templates.",
         ],
     }

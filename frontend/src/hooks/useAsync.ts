@@ -50,6 +50,23 @@ export function useAsync<T>(loader: () => Promise<T>, deps: unknown[] = []): Asy
   return { data, loading, error, reload, setData }
 }
 
+/**
+ * A sentence a person can act on. Validation problems already read as
+ * sentences ("Password must contain an uppercase letter"), so they are shown
+ * on their own, without the framework's "Value error," prefix or field codes.
+ */
+export function friendlyError(caught: unknown): string {
+  if (!(caught instanceof ApiError)) return 'Something went wrong. Please try again.'
+  if (caught.status === 0) return 'We could not reach the server. Check your connection and try again.'
+  if (caught.problems.length > 0) {
+    return caught.problems
+      .map((p) => p.message.replace(/^Value error,\s*/i, '').replace(/^\w/, (c) => c.toUpperCase()))
+      .map((m) => (/[.!?]$/.test(m) ? m : `${m}.`))
+      .join(' ')
+  }
+  return caught.message
+}
+
 /** Wrap a mutating call with pending/error state for buttons and forms. */
 export function useAction<Args extends unknown[], R>(
   action: (...args: Args) => Promise<R>,
@@ -69,11 +86,7 @@ export function useAction<Args extends unknown[], R>(
       try {
         return await action(...args)
       } catch (caught) {
-        const message =
-          caught instanceof ApiError
-            ? [caught.message, ...caught.problems.map((p) => `${p.field}: ${p.message}`)].join(' ')
-            : 'Something went wrong.'
-        setError(message)
+        setError(friendlyError(caught))
         return undefined
       } finally {
         setPending(false)

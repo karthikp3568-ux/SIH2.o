@@ -1,14 +1,13 @@
 """Phase 2 - turn an utterance into structured beneficiary facts.
 
-Two extractors:
+Extractors:
 
-* `RuleBasedExtractor` (default) - deterministic lexicon + taxonomy matching.
-  Every fact it produces carries the phrase that produced it, so a human can
-  audit the extraction. It works offline and never invents a value.
-* `LLMAssistedExtractor` - optional. It runs the rule-based extractor first,
-  then asks an LLM only about fields the rules left empty. Rule-based results
-  always win on conflict, and the LLM is constrained to a closed vocabulary, so
-  it cannot introduce an unknown education level or invent a skill.
+* `SemanticExtractor` (default) - multilingual meaning, not keywords. Claude
+  when an API key is configured, otherwise an offline multilingual sentence
+  encoder (see `semantic_understanding`). Both use a closed vocabulary.
+* `RuleBasedExtractor` - deterministic lexicon + taxonomy matching. Within the
+  semantic pipeline it supplies only exact numbers, PIN codes and districts, and
+  is the last resort when no semantic layer is available.
 """
 
 from __future__ import annotations
@@ -20,14 +19,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..config import get_settings
-from ..core.enums import (
-    Confidence,
-    EducationLevel,
-    GoalType,
-    Mobility,
-)
+from ..core.enums import Mobility
 from ..models import Opportunity
-from ..providers.llm import complete_json
 from .language_id import detect_language, extract_number, normalize_text
 from .lexicon import (
     CONSTRAINT_PHRASES,
@@ -49,6 +42,9 @@ class ExtractedFact:
     confidence: float
     evidence: str
     extractor: str = "rule_based"
+    #: Human wording kept when the value alone would lose meaning
+    #: ("Several years" has no exact number, and none is invented).
+    label: str | None = None
 
     def as_dict(self) -> dict:
         return asdict(self)
@@ -60,9 +56,13 @@ class ExtractionResult:
     language_confidence: float = 0.0
     is_code_switched: bool = False
     normalized_text: str = ""
+    #: Which understanding layer(s) produced this result, for logs and audit.
+    extractor: str = "rule_based"
 
     education: ExtractedFact | None = None
     occupations: list[ExtractedFact] = field(default_factory=list)
+    #: Work the person said they used to do and stopped.
+    previous_occupations: list[ExtractedFact] = field(default_factory=list)
     skills: list[SkillMatch] = field(default_factory=list)
     interests: list[ExtractedFact] = field(default_factory=list)
     goals: list[ExtractedFact] = field(default_factory=list)
@@ -103,8 +103,10 @@ class ExtractionResult:
             "language": self.language,
             "language_confidence": self.language_confidence,
             "is_code_switched": self.is_code_switched,
+            "extractor": self.extractor,
             "education": self.education.as_dict() if self.education else None,
             "occupations": [o.as_dict() for o in self.occupations],
+            "previous_occupations": [o.as_dict() for o in self.previous_occupations],
             "skills": [
                 {
                     "code": s.code,
@@ -159,7 +161,7 @@ class RuleBasedExtractor:
     name = "rule_based"
 
     def extract(
-        self, db: Session, text: str, language_hint: str | None = None
+        self, db: Session, text: str, language_hint: str | None = None, context=None
     ) -> ExtractionResult:
         detection = detect_language(text, language_hint)
         normalized = normalize_text(text)
@@ -315,99 +317,84 @@ class RuleBasedExtractor:
 
 
 # ---------------------------------------------------------------------------
-# LLM-assisted extraction (optional)
+# Semantic pipeline (default)
 # ---------------------------------------------------------------------------
 
-_LLM_SYSTEM = """You extract structured facts from what a rural job seeker in India said about themselves.
 
-Rules you must follow:
-- Only report what the person actually said. If something was not said, use null.
-- Never invent skills, courses, employers, schemes or qualifications.
-- Use ONLY these values.
-  education: none, primary, class_8, class_10, class_12, iti, diploma, graduate, postgraduate
-  mobility: low, medium, high
-  goal: job, apprenticeship, training, self_employment, higher_income, undecided
-- "skills" must be short plain phrases describing what the person can do, in English.
-- Reply with JSON only, no commentary.
+class SemanticExtractor:
+    """Meaning first, keywords last.
 
-JSON shape:
-{"education": str|null, "occupation": str|null, "skills": [str],
- "interests": [str], "goal": str|null, "mobility": str|null,
- "experience_years": number|null, "age": number|null}"""
+    1. The LLM, when one is configured, reads the message with the profile so far.
+    2. Otherwise (or when the call fails) the offline multilingual encoder does.
+    3. The deterministic extractor then contributes only what semantics cannot
+       do well - exact numbers (age, km, income), PIN codes and known district
+       names - and fills a categorical field only if both semantic layers left
+       it empty, so it can never override an understood meaning.
+    """
 
-_ALLOWED_EDUCATION = {str(e) for e in EducationLevel}
-_ALLOWED_MOBILITY = {str(m) for m in Mobility}
-_ALLOWED_GOALS = {str(g) for g in GoalType}
+    name = "semantic"
 
+    def __init__(self, *, force_llm: bool = False) -> None:
+        from .semantic_understanding import EmbeddingSemanticExtractor, LLMSemanticExtractor  # noqa: PLC0415
 
-class LLMAssistedExtractor:
-    """Rule-based first; the LLM only fills gaps, inside a closed vocabulary."""
-
-    name = "llm"
-
-    def __init__(self) -> None:
+        self._llm = LLMSemanticExtractor()
+        self._embedding = EmbeddingSemanticExtractor()
         self._rules = RuleBasedExtractor()
+        self._force_llm = force_llm
 
-    def extract(self, db: Session, text: str, language_hint: str | None = None) -> ExtractionResult:
-        result = self._rules.extract(db, text, language_hint)
-        payload = complete_json(_LLM_SYSTEM, f"The person said:\n{text}", max_tokens=600)
-        if not payload:
-            return result  # LLM unavailable or unparseable - deterministic result stands.
+    def extract(self, db: Session, text: str, language_hint: str | None = None, context=None) -> ExtractionResult:
+        from .semantic_understanding import semantic_model_available  # noqa: PLC0415
 
-        if result.education is None:
-            value = payload.get("education")
-            if isinstance(value, str) and value in _ALLOWED_EDUCATION:
-                result.education = ExtractedFact(
-                    value=value, confidence=0.6, evidence="Inferred by language model", extractor="llm"
-                )
+        semantic: ExtractionResult | None = None
+        if self._llm.available():
+            semantic = self._llm.extract(db, text, language_hint, context)
+        if semantic is None and not self._force_llm and semantic_model_available():
+            semantic = self._embedding.extract(db, text, language_hint, context)
 
-        if result.mobility is None:
-            value = payload.get("mobility")
-            if isinstance(value, str) and value in _ALLOWED_MOBILITY:
-                result.mobility = ExtractedFact(
-                    value=value, confidence=0.6, evidence="Inferred by language model", extractor="llm"
-                )
+        rules = self._rules.extract(db, text, language_hint)
+        if semantic is None:
+            return rules
+        return _combine(semantic, rules)
 
-        if not result.goals:
-            value = payload.get("goal")
-            if isinstance(value, str) and value in _ALLOWED_GOALS:
-                result.goals.append(
-                    ExtractedFact(
-                        value=value, confidence=0.6, evidence="Inferred by language model", extractor="llm"
-                    )
-                )
 
-        if not result.occupations and isinstance(payload.get("occupation"), str):
-            result.occupations.append(
-                ExtractedFact(
-                    value=payload["occupation"][:160],
-                    confidence=0.55,
-                    evidence="Inferred by language model",
-                    extractor="llm",
-                )
-            )
-
-        # LLM-proposed skills are re-matched against the taxonomy. Anything that
-        # does not resolve to a known skill is discarded rather than stored.
-        proposed = payload.get("skills")
-        if isinstance(proposed, list):
-            known = {s.code for s in result.skills}
-            index = build_alias_index(db)
-            for phrase in proposed[:10]:
-                if not isinstance(phrase, str):
-                    continue
-                for match in match_skills_in_text(db, phrase, index):
-                    if match.code not in known:
-                        match.confidence = Confidence.LOW
-                        match.confidence_score = 0.5
-                        match.evidence = f"Language model suggested '{phrase}'; matched to taxonomy"
-                        result.skills.append(match)
-                        known.add(match.code)
-        return result
+def _combine(semantic: ExtractionResult, rules: ExtractionResult) -> ExtractionResult:
+    """Semantic result, topped up with what only the rules can supply."""
+    result = semantic
+    for key in ("age", "max_travel_km", "target_income", "pincode", "district", "state"):
+        if getattr(result, key) is None and getattr(rules, key) is not None:
+            setattr(result, key, getattr(rules, key))
+    if result.education is None:
+        result.education = rules.education
+    if result.mobility is None:
+        result.mobility = rules.mobility
+    if result.experience_years is None:
+        result.experience_years = rules.experience_years
+    if not result.goals:
+        result.goals = rules.goals
+    if not result.occupations and not result.previous_occupations:
+        result.occupations = rules.occupations
+    if not result.constraints:
+        result.constraints = rules.constraints
+    # Interests are left to the semantic layer: a keyword cannot tell "I like
+    # business" from "I want to start a business" (a goal, already recorded).
+    codes = {s.code for s in result.skills}
+    # A leaf skill the encoder missed is added only on an exact alias match.
+    # Category nodes are not: a keyword cannot tell "I run a business" from
+    # "I want to start a business", and the skill graph derives categories
+    # from the taxonomy anyway.
+    # Nor is a skill the semantic layer understood as something they *want* to learn.
+    wanted = {str(i.value) for i in result.interests}
+    result.skills += [
+        s for s in rules.skills
+        if s.code not in codes and s.code not in wanted and s.is_exact and not s.is_category
+    ]
+    result.extractor = f"{semantic.extractor}+rules"
+    return result
 
 
 def get_profile_extractor():
     """Extractor selected by PROFILE_EXTRACTOR."""
-    if get_settings().profile_extractor == "llm":
-        return LLMAssistedExtractor()
-    return RuleBasedExtractor()
+    mode = get_settings().profile_extractor
+    if mode == "rule_based":
+        return RuleBasedExtractor()
+    return SemanticExtractor(force_llm=mode == "llm")

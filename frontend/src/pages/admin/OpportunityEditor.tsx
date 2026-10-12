@@ -259,7 +259,7 @@ export function OpportunityEditor({
             <Button variant="secondary" type="button" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" loading={save.pending} icon="💾">
+            <Button type="submit" loading={save.pending} icon="check">
               Save
             </Button>
           </div>
