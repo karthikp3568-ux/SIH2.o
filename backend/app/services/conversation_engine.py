@@ -542,13 +542,19 @@ def handle_message(
         pending.name == "occupation" and "skills" in after
     )
     if pending is not None and not answered_pending:
-        misses[pending.name] = misses.get(pending.name, 0) + 1
-        if misses[pending.name] <= settings.max_clarifications_per_slot:
-            # Ask again, differently, with an example - never the same words.
-            clarification = True
-        else:
+        if understood or newly_filled:
+            # The beneficiary shared other relevant information (e.g., skills, goal, education).
+            # We acknowledge their input and advance to the next unfilled slot rather than looping.
             asked.add(pending.name)
-            prefix = _localised(MOVE_ON, language) if not understood else ""
+            clarification = False
+        else:
+            misses[pending.name] = misses.get(pending.name, 0) + 1
+            if misses[pending.name] <= settings.max_clarifications_per_slot:
+                # Ask once with a rephrased example, never an infinite loop.
+                clarification = True
+            else:
+                asked.add(pending.name)
+                prefix = _localised(MOVE_ON, language) if not understood else ""
     elif pending is not None:
         asked.add(pending.name)
 

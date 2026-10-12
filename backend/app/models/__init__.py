@@ -24,7 +24,7 @@ from .qualification import (
 )
 from .recommendation import Recommendation, RecommendationReason, RecommendationRun
 from .skills import BeneficiarySkill, Skill, SkillAlias, SkillEvidence, SkillRelation
-from .user import Consent, User
+from .user import Consent, User, VerificationChallenge
 
 __all__ = [
     "REJECTION_REASONS",
@@ -60,6 +60,7 @@ __all__ = [
     "SkillRelation",
     "TrainingProgram",
     "User",
+    "VerificationChallenge",
     "as_aware",
     "new_id",
     "utcnow",

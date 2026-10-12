@@ -25,48 +25,50 @@ EDUCATION_PHRASES: list[tuple[str, tuple[str, ...]]] = [
     (
         EducationLevel.POSTGRADUATE,
         ("post graduate", "postgraduate", "master degree", "masters", "m a ", "m sc", "m com",
-         "mba", "एमए", "स्नातकोत्तर", "முதுகலை"),
+         "mba", "एमए", "स्नातकोत्तर", "ಮುದುಕಲೈ", "ಸ್ನಾತಕೋತ್ತರ", "ಎಂಎ", "ಎಂಎಸ್ಸಿ"),
     ),
     (
         EducationLevel.GRADUATE,
         ("graduate", "graduation", "degree college", "bachelor", "b a ", "b sc", "b com",
-         "b tech", "be degree", "स्नातक", "ग्रेजुएट", "डिग्री", "पदवी", "இளநிலை", "பட்டப்படிப்பு"),
+         "b tech", "be degree", "स्नातक", "ग्रेजुएट", "डिग्री", "पदवी", "ಇಳನಿಲೈ", "ಪಟ್ಟಪ್ಪಡಿಪ್ಪು",
+         "ಪದವಿ", "ಗ್ರಾಜುಯೇಟ್", "ಬಿಎ", "ಬಿಕಾಂ", "ಬಿಎಸ್ಸಿ", "ಬಿಟೆಕ್"),
     ),
     (
         EducationLevel.DIPLOMA,
-        ("diploma", "polytechnic", "डिप्लोमा", "पॉलिटेक्निक", "டிப்லோமா"),
+        ("diploma", "polytechnic", "डिप्लोमा", "पॉलिटेक्निक", "ಡಿಪ್ಲೋಮಾ", "ಪಾಲಿಟೆಕ್ನಿಕ್"),
     ),
     (
         EducationLevel.ITI,
         ("iti", "i t i", "industrial training institute", "trade certificate", "आईटीआई",
-         "व्यावसायिक प्रशिक्षण", "ஐடிஐ"),
+         "व्यावसायिक प्रशिक्षण", "ಐಟಿಐ"),
     ),
     (
         EducationLevel.CLASS_12,
         ("12th", "12 th", "class 12", "twelfth", "higher secondary", "hsc", "intermediate",
          "puc", "12 pass", "barahvi", "barhvi", "बारहवीं", "१२वीं", "12वीं", "बारावी",
-         "பன்னிரண்டாம்", "பிளஸ் டூ"),
+         "12ನೇ ತರಗತಿ", "ಪಿಯುಸಿ", "ದ್ವಿತೀಯ ಪಿಯುಸಿ", "12 ಪಾಸ್"),
     ),
     (
         EducationLevel.CLASS_10,
         ("10th", "10 th", "class 10", "tenth", "matric", "matriculation", "sslc", "ssc",
          "10 pass", "10th pass", "dasvi", "dasveen", "das pass", "दसवीं", "१०वीं", "10वीं",
-         "दहावी", "मैट्रिक", "பத்தாம் வகுப்பு", "பத்தாவது", "పదవ తరగతి"),
+         "दहावी", "मैट्रिक", "பத்தாம் வகுப்பு", "பத்தாவது", "పదవ తరగతి",
+         "10ನೇ ತರಗತಿ", "ಎಸ್ಎಸ್ಎಲ್ಸಿ", "10 ಪಾಸ್"),
     ),
     (
         EducationLevel.CLASS_8,
         ("8th", "8 th", "class 8", "eighth", "8 pass", "aathvi", "आठवीं", "८वीं", "8वीं",
-         "आठवी", "எட்டாம் வகுப்பு"),
+         "आठवी", "ಎಂಟನೇ ತರಗತಿ", "8ನೇ ತರಗತಿ"),
     ),
     (
         EducationLevel.PRIMARY,
         ("5th", "class 5", "primary school", "fifth", "प्राथमिक", "पांचवीं", "५वीं",
-         "தொடக்கப்பள்ளி"),
+         "ಪ್ರಾಥಮಿಕ ಶಾಲೆ"),
     ),
     (
         EducationLevel.NONE,
         ("never went to school", "no schooling", "not studied", "did not study", "illiterate",
-         "स्कूल नहीं", "पढ़ा नहीं", "अनपढ़", "शाळेत गेलो नाही", "படிக்கவில்லை"),
+         "स्कूल नहीं", "पढ़ा नहीं", "अनपढ़", "शाळेत गेलो नाही", "ಶಾಲೆಗೆ ಹೋಗಿಲ್ಲ", "ಓದಿಲ್ಲ"),
     ),
 ]
 
@@ -80,46 +82,47 @@ OCCUPATION_PHRASES: list[tuple[str, str, tuple[str, ...]]] = [
         "Agriculture",
         ("farming", "farmer", "agriculture", "agricultural", "i farm", "crop", "field work",
          "kheti", "khet", "kisan", "shetkari", "shetat", "खेती", "किसान", "कृषि", "खेत",
-         "शेती", "शेतकरी", "விவசாயம்", "விவசாயி", "వ్యవసాయం", "কৃষি"),
+         "शेती", "शेतकरी", "விவசாயம்", "விவசாயಿ", "వ్యవసాయం", "কৃষি",
+         "ಕೃಷಿ", "ರೈತ", "ಹೊಲದ ಕೆಲಸ", "ಕೃಷಿಕ"),
     ),
     (
         "Agricultural labour",
         "Agriculture",
         ("farm labour", "farm labourer", "agricultural labour", "majdoori", "mazdoor",
-         "मजदूरी", "मजदूर", "कूली", "கூலி வேலை"),
+         "मजदूरी", "मजदूर", "कूली", "ಕೂಲಿ ಕೆಲಸ", "ಕೃಷಿ ಕೂಲಿ"),
     ),
     (
         "Dairy / livestock",
         "Agriculture",
         ("dairy", "milk business", "cattle", "buffalo", "goat rearing", "पशुपालन", "दूध",
-         "डेयरी", "பால் பொருள்"),
+         "डेयरी", "பால் பொருள்", "ಡೈರಿ", "ಹಾಲು ಮಾರಾಟ", "ಹಸು ಸಾಕಣೆ"),
     ),
     (
         "Machinery repair / mechanic",
         "Engineering",
         ("mechanic", "repair work", "repairing", "garage", "workshop", "मैकेनिक", "मरम्मत",
-         "गैराज", "दुरुस्ती", "மெக்கானிக்", "ரிப்பேர்"),
+         "गैराज", "दुरुस्ती", "ಮೆಕ್ಯಾನಿಕ್", "ದುರಸ್ತಿ", "ರಿಪೇರಿ", "ಗ್ಯಾರೇಜ್"),
     ),
     (
         "Construction work",
         "Construction",
         ("construction", "mason", "mistri", "building work", "राजमिस्त्री", "मिस्त्री",
-         "निर्माण", "கட்டுமான"),
+         "निर्माण", "ಕಟ್ಟಡ ಕೆಲಸ", "ಮೇಸ್ತ್ರಿ"),
     ),
     (
         "Driving",
         "Logistics",
-        ("driver", "driving", "auto rickshaw", "tempo", "ड्राइवर", "ड्राइविंग", "ஓட்டுநர்"),
+        ("driver", "driving", "auto rickshaw", "tempo", "ड्राइवर", "ड्राइविंग", "ಚಾಲಕ", "ಡ್ರೈವಿಂಗ್"),
     ),
     (
         "Tailoring",
         "Apparel",
-        ("tailor", "tailoring", "stitching", "सिलाई", "दर्जी", "தையல்"),
+        ("tailor", "tailoring", "stitching", "सिलाई", "दर्जी", "தையல்", "ಟೈಲರಿಂಗ್", "ಹೊಲಿಗೆ ಕೆಲಸ"),
     ),
     (
         "Shop / small trade",
         "Retail",
-        ("shop", "shopkeeper", "small business", "dukan", "दुकान", "व्यापार", "கடை"),
+        ("shop", "shopkeeper", "small business", "dukan", "दुकान", "व्यापार", "ಅಂಗಡಿ", "ವ್ಯಾಪಾರ"),
     ),
     (
         "Software engineer / developer",
@@ -127,37 +130,38 @@ OCCUPATION_PHRASES: list[tuple[str, str, tuple[str, ...]]] = [
         ("software engineer", "software developer", "software", "developer", "programmer",
          "coder", "coding", "web developer", "app developer", "computer engineer",
          "it engineer", "engineer", "engineering", "सॉफ्टवेयर इंजीनियर", "डेवलपर", "कोडिंग",
-         "மென்பொருள் பொறியாளர்", "సాఫ్ట్‌వేర్ ఇంజనీర్"),
+         "ಮೆನ್‌ಪೊರುಳ್", "ಸಾಫ್ಟ್‌ವೇರ್ ಇಂಜಿನಿಯರ್", "ಸಾಫ್ಟ್‌ವೇರ್ ಡೆವಲಪರ್", "ಕೋಡಿಂಗ್", "ಪ್ರೋಗ್ರಾಮರ್"),
     ),
     (
         "IT support / computer technician",
         "IT & Software",
         ("it support", "computer technician", "hardware engineer", "hardware support",
-         "network technician", "system admin", "pc repair", "कंप्यूटर ऑपरेटर", "आईटी"),
+         "network technician", "system admin", "pc repair", "कंप्यूटर ऑपरेटर", "आईटी",
+         "ಕಂಪ್ಯೂಟರ್ ಆಪರೇಟರ್", "ಐಟಿ ಸಪೋರ್ಟ್", "ಹಾರ್ಡ್‌ವೇರ್"),
     ),
     (
         "Data analyst / Office associate",
         "IT & Software",
         ("data analyst", "data entry", "office assistant", "excel operator",
-         "computer operator", "डाटा एंट्री"),
+         "computer operator", "डाटा एंट्री", "ಡೇಟಾ ಅನಲಿಸ್ಟ್", "ಡೇಟಾ ಎಂಟ್ರಿ"),
     ),
     (
         "Mechanical / Civil engineer",
         "Engineering",
         ("mechanical engineer", "civil engineer", "cad engineer", "site engineer",
-         "diploma engineer", "मैकेनिकल इंजीनियर", "सिविल इंजीनियर"),
+         "diploma engineer", "मैकेनिकल इंजीनियर", "सिविल इंजीनियर", "ಮೆಕ್ಯಾನಿಕಲ್ ಇಂಜಿನಿಯರ್"),
     ),
     (
         "Accountant / Finance executive",
         "Finance",
         ("accountant", "accounting", "tally operator", "finance executive", "bookkeeper",
-         "मुनीम", "अकाउंटेंट"),
+         "मुनीम", "अकाउंटेंट", "ಲೆಕ್ಕಪತ್ರ", "ಅಕೌಂಟೆಂಟ್"),
     ),
     (
         "Currently not working",
         None,
         ("no work", "unemployed", "not working", "jobless", "sitting at home", "बेरोजगार",
-         "काम नहीं", "वेळ नाही काम", "வேலை இல்லை"),
+         "काम नहीं", "वेळ नाही काम", "ಕೆಲಸವಿಲ್ಲ", "ಉದ್ಯೋಗವಿಲ್ಲ"),
     ),
 ]
 
@@ -174,7 +178,7 @@ MOBILITY_PHRASES: dict[str, tuple[str, ...]] = {
         "door nahi", "dur nahi ja sakta", "gaon me hi", "gaon mein hi", "bahar nahi",
         "दूर नहीं", "दूर नहीं जा सकता", "गाँव में ही", "गांव में ही", "बाहर नहीं जा सकता",
         "घर के पास", "दूर जाना मुश्किल", "लांब जाऊ शकत नाही", "गावातच",
-        "தூரம் போக முடியாது", "வெளியே போக முடியாது", "ஊரிலேயே", "దూరం వెళ్లలేను",
+        "தூரம் போக முடியாது", "ದೂರ ಹೋಗಲು ಆಗಲ್ಲ", "ದೂರ ಹೋಗಲಾರೆ", "ಊರಲ್ಲೇ", "ಹತ್ತಿರ ಮಾತ್ರ", "ಗ್ರಾಮದಲ್ಲೇ",
     ),
     Mobility.HIGH: (
         "can travel anywhere", "travel anywhere", "ready to travel", "willing to travel",
@@ -182,12 +186,12 @@ MOBILITY_PHRASES: dict[str, tuple[str, ...]] = {
         "go to city", "any city", "anywhere in state", "no problem travelling",
         "kahin bhi ja sakta", "kahin bhi", "shahar ja sakta",
         "कहीं भी जा सकता", "कहीं भी जाने को तैयार", "शहर जा सकता", "दूर जा सकता",
-        "कुठेही जाऊ शकतो", "எங்கும் போக முடியும்", "வெளியூர் போகலாம்",
+        "कुठेही जाऊ शकतो", "ಎಲ್ಲಿ ಬೇಕಾದರೂ ಹೋಗಬಲ್ಲೆ", "ನಗರಕ್ಕೆ ಹೋಗಬಲ್ಲೆ", "ಬೇರೆ ಊರಿಗೆ ಹೋಗಲು ಸಿದ್ಧ",
     ),
     Mobility.MEDIUM: (
         "can travel a little", "travel some distance", "nearby town", "taluka", "block level",
         "up to some distance", "daily up down", "can go to town", "thoda door",
-        "थोड़ा दूर", "आस पास", "तालुका", "जवळपास", "கொஞ்சம் தூரம்",
+        "थोड़ा दूर", "आस पास", "तालुका", "जवळपास", "ಸ್ವಲ್ಪ ದೂರ", "ತಾಲೂಕು", "ಪಕ್ಕದ ಊರು",
     ),
 }
 
@@ -201,47 +205,48 @@ GOAL_PHRASES: dict[str, tuple[str, ...]] = {
         "self employed", "be my own boss", "own workshop", "own garage", "start a business",
         "apna kaam", "apna business", "apni dukan", "khud ka kaam",
         "अपना काम", "अपना व्यवसाय", "अपनी दुकान", "खुद का काम", "स्वयंरोजगार",
-        "स्वतःचा व्यवसाय", "சொந்த தொழில்", "சொந்தமாக", "సొంత వ్యాపారం",
+        "ಸ್ವಂತ ವ್ಯಾಪಾರ", "ಸ್ವಂತ ಅಂಗಡಿ", "ಸ್ವಂತ ಕೆಲಸ", "ಸ್ವಂತ ಉದ್ಯೋಗ",
     ),
     GoalType.JOB: (
         "want a job", "need a job", "looking for job", "get employment", "naukri",
         "company job", "permanent job", "salary job",
-        "नौकरी", "नौकरी चाहिए", "काम चाहिए", "नोकरी", "வேலை வேண்டும்", "ఉద్యోగం",
+        "नौकरी", "नौकरी चाहिए", "काम चाहिए", "नोकरी", "ಕೆಲಸ ಬೇಕು", "ಉದ್ಯೋಗ ಬೇಕು", "ನೌಕರಿ",
     ),
     GoalType.APPRENTICESHIP: (
         "apprentice", "apprenticeship", "learn on the job", "learn while working",
-        "प्रशिक्षु", "अप्रेंटिस", "शिकाऊ", "பயிற்சி பணி",
+        "प्रशिक्षु", "अप्रेंटिस", "ಅಪ್ರೆಂಟಿಸ್", "ಕೆಲಸ ಕಲಿಯುವುದು",
     ),
     GoalType.TRAINING: (
         "want to learn", "want training", "learn new skill", "get certificate",
         "certification", "course", "training chahiye", "sikhna hai",
-        "सीखना है", "प्रशिक्षण", "कोर्स", "सर्टिफिकेट", "शिकायचे आहे",
-        "கற்க வேண்டும்", "பயிற்சி", "నేర్చుకోవాలి",
+        "सीखना है", "प्रशिक्षण", "कोर्स", "सर्टिफिकेट", "ಕಲಿಯಬೇಕು", "ತರಬೇತಿ ಬೇಕು", "ಕೋರ್ಸ್",
     ),
     GoalType.HIGHER_INCOME: (
         "earn more", "more income", "more money", "better income", "increase income",
         "higher income", "improve earning", "income badhana", "zyada kamana",
         "jyada paisa", "paisa kamana",
         "ज्यादा कमाना", "ज्यादा पैसा", "अधिक आय", "कमाई बढ़ाना", "आय बढ़ाना",
-        "जास्त कमवायचे", "अधिक उत्पन्न", "அதிக வருமானம்", "நல்ல சம்பளம்",
-        "ఎక్కువ సంపాదించాలి",
+        "ಹೆಚ್ಚು ಗಳಿಸಬೇಕು", "ಹೆಚ್ಚು ದುಡಿಯಬೇಕು", "ಆದಾಯ ಹೆಚ್ಚಿಸಬೇಕು",
     ),
 }
 
 # ---------------------------------------------------------------------------
-# Interests (canonical tag -> phrases). Tags match skill taxonomy codes where
-# one exists, so an interest can be scored against an opportunity's skills.
+# Interests (canonical tag -> phrases).
 # ---------------------------------------------------------------------------
 
 INTEREST_PHRASES: dict[str, tuple[str, ...]] = {
     "mechanical": (
         "mechanical", "machine work", "machines", "engine work", "repair work", "technical work",
         "mechanic work", "machine ka kaam", "मशीन का काम", "मशीन", "यंत्र", "तांत्रिक काम",
-        "मेकॅनिकल", "மெக்கானிக்", "இயந்திர வேலை", "మెకానికల్",
+        "ಮೆಕ್ಯಾನಿಕಲ್", "ಯಂತ್ರ", "ಯಂತ್ರಗಳ ಕೆಲಸ",
     ),
     "electrical": (
         "electrical", "electric work", "wiring", "electrician", "बिजली का काम", "बिजली",
-        "वायरिंग", "மின் வேலை",
+        "वायरिंग", "ವಿದ್ಯುತ್", "ಎಲೆಕ್ಟ್ರಿಕಲ್",
+    ),
+    "it_software": (
+        "it", "software", "coding", "programming", "web development", "computer", "app development",
+        "सॉफ्टवेयर", "कोडिंग", "ಪ್ರೋಗ್ರಾಮಿಂಗ್", "ಸಾಫ್ಟ್‌ವೇರ್",
     ),
     "agriculture": (
         "agriculture", "farming interest", "crop", "खेती", "कृषि", "शेती", "விவசாயம்",

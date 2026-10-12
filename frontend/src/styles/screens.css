@@ -679,3 +679,205 @@
   .question-card { padding: var(--space-5); }
   .composer__send-label { display: none; }
 }
+
+/* Homepage Architecture & Trust Sections */
+.home-section {
+  padding: clamp(40px, 6vw, 72px) 0;
+  border-top: 1px solid var(--line);
+}
+.home-section--alt {
+  background: var(--surface-2);
+}
+.home-section__header {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto clamp(28px, 4vw, 44px);
+}
+.home-section__header h2 {
+  font-size: clamp(1.6rem, 3vw, 2.3rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin: 6px 0 10px;
+}
+.home-section__header p {
+  font-size: 1.05rem;
+  color: var(--ink-3);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Factor Nodes Grid */
+.factors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+}
+.factor-card {
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-xs);
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.factor-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  border-color: #cbd5e1;
+}
+.factor-card__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius);
+  display: grid;
+  place-items: center;
+  background: var(--teal-050);
+  color: var(--teal-700);
+  margin-bottom: var(--space-3);
+}
+.factor-card h3 {
+  font-size: 1.1rem;
+  font-weight: 750;
+  margin: 0 0 4px;
+}
+.factor-card p {
+  font-size: 0.92rem;
+  color: var(--ink-3);
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* Recommendation Formula Box */
+.formula-banner {
+  padding: clamp(24px, 4vw, 36px);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #fff;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  align-items: center;
+  text-align: center;
+}
+.formula-banner__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 1.15rem;
+  font-weight: 750;
+}
+.formula-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 0.96rem;
+  letter-spacing: -0.01em;
+}
+.formula-chip--result {
+  background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+  border-color: rgba(20, 184, 166, 0.6);
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.4);
+}
+.formula-op {
+  color: #94a3b8;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+/* 8 Recommendation Rules Grid */
+.rules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-4);
+}
+.rule-item {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.rule-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--navy-100);
+  color: var(--navy-800);
+  font-weight: 800;
+  font-size: 0.85rem;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.rule-item h4 {
+  font-size: 0.98rem;
+  font-weight: 750;
+  margin: 0 0 3px;
+}
+.rule-item p {
+  font-size: 0.88rem;
+  color: var(--ink-3);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* What We Do vs Don't Do Comparison */
+.trust-split {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-5);
+}
+.trust-col {
+  padding: var(--space-5) var(--space-6);
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.trust-col--dont {
+  border-color: #fecaca;
+  background: #fffafa;
+}
+.trust-col--do {
+  border-color: #bbf7d0;
+  background: #f8fdf9;
+}
+.trust-col h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin: 0 0 var(--space-4);
+}
+.trust-col--dont h3 { color: #dc2626; }
+.trust-col--do h3 { color: #16a34a; }
+.trust-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.trust-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.94rem;
+  line-height: 1.45;
+  color: var(--ink);
+}
+.trust-list li svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+

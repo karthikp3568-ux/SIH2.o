@@ -23,6 +23,8 @@ class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     role: Mapped[str] = mapped_column(String(32), default=Role.BENEFICIARY, nullable=False)
     preferred_language: Mapped[str] = mapped_column(String(8), default="en", nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    email_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    phone_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     failed_login_count: Mapped[int] = mapped_column(default=0, nullable=False)
     locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
@@ -35,8 +37,37 @@ class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     consents: Mapped[list["Consent"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
+    verification_challenges: Mapped[list["VerificationChallenge"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
 
     __table_args__ = (Index("ix_users_role_active", "role", "is_active"),)
+
+
+class VerificationChallenge(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+    """Secure, expiring OTP challenge for email, SMS or password recovery."""
+
+    __tablename__ = "verification_challenges"
+
+    user_id: Mapped[str | None] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=True
+    )
+    destination: Mapped[str] = mapped_column(String(255), index=True, nullable=False)
+    # email | phone | password_reset
+    challenge_type: Mapped[str] = mapped_column(String(32), nullable=False)
+    code_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    attempts: Mapped[int] = mapped_column(default=0, nullable=False)
+    max_attempts: Mapped[int] = mapped_column(default=5, nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    resend_available_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    is_used: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    user: Mapped[User | None] = relationship(back_populates="verification_challenges")
+
+    __table_args__ = (
+        Index("ix_challenges_dest_type", "destination", "challenge_type"),
+    )
 
 
 class Consent(UUIDPrimaryKeyMixin, TimestampMixin, Base):

@@ -6,9 +6,12 @@ export interface User {
   id: string
   email: string
   full_name: string
+  phone?: string | null
   role: Role
   preferred_language: string
   is_active: boolean
+  email_verified?: boolean
+  phone_verified?: boolean
 }
 
 export interface TokenPair {
@@ -21,6 +24,25 @@ export interface TokenPair {
 export interface AuthResponse {
   user: User
   tokens: TokenPair
+  otp_sent?: boolean
+  dev_otp?: string | null
+}
+
+export interface SendOtpResponse {
+  message: string
+  destination: string
+  challenge_type: 'email' | 'phone' | 'password_reset'
+  resend_in_seconds: number
+  expires_in_minutes: number
+  dev_code?: string | null
+  is_dev_mode: boolean
+}
+
+export interface VerifyOtpResponse {
+  verified: boolean
+  message: string
+  email_verified: boolean
+  phone_verified: boolean
 }
 
 export interface SlotOption {

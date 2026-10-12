@@ -65,14 +65,61 @@ class UserOut(BaseModel):
     id: str
     email: EmailStr
     full_name: str
+    phone: str | None = None
     role: Role
     preferred_language: str
     is_active: bool
+    email_verified: bool = False
+    phone_verified: bool = False
+
+
+class SendOtpRequest(BaseModel):
+    destination: str = Field(min_length=3, max_length=255)
+    challenge_type: str = Field(pattern="^(email|phone|password_reset)$")
+
+
+class SendOtpResponse(BaseModel):
+    message: str
+    destination: str
+    challenge_type: str
+    resend_in_seconds: int
+    expires_in_minutes: int
+    dev_code: str | None = None
+    is_dev_mode: bool = False
+
+
+class VerifyOtpRequest(BaseModel):
+    destination: str = Field(min_length=3, max_length=255)
+    challenge_type: str = Field(pattern="^(email|phone|password_reset)$")
+    code: str = Field(min_length=4, max_length=10)
+
+
+class VerifyOtpResponse(BaseModel):
+    verified: bool
+    message: str
+    email_verified: bool = False
+    phone_verified: bool = False
+
+
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+    code: str = Field(min_length=4, max_length=10)
+    new_password: str = Field(min_length=8, max_length=128)
+
+    @field_validator("new_password")
+    @classmethod
+    def _strong_enough(cls, value: str) -> str:
+        problems = validate_password_strength(value)
+        if problems:
+            raise ValueError("Password " + "; ".join(problems))
+        return value
 
 
 class AuthResponse(BaseModel):
     user: UserOut
     tokens: TokenPair
+    otp_sent: bool = False
+    dev_otp: str | None = None
 
 
 class ConsentIn(BaseModel):
@@ -106,3 +153,4 @@ class CreateUserRequest(BaseModel):
         if problems:
             raise ValueError("Password " + "; ".join(problems))
         return value
+

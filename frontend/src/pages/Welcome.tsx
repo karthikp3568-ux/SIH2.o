@@ -1,13 +1,19 @@
 /**
- * Landing screen.
+ * Landing screen — Smart Livelihood Navigator (SIH26097).
  *
- * One primary action — start talking — with typing as an equal second path.
- * Interactive rotating conversational ticker, multi-sector career badges,
- * and dual interactive demo tracks (Rural Tech / Software Engineer).
+ * Implements Section 15 of the Master Build Specification:
+ * 1. Hero with primary action (Start Journey, Type, Sign In, Create Account)
+ * 2. How the system works (4-Phase Architecture)
+ * 3. What information is considered (8 Factor Nodes)
+ * 4. How recommendations are decided (Visual Formula)
+ * 5. Our 8 recommendation rules
+ * 6. Where the knowledge comes from (NSQF, NAPS, PMKVY, Schemes)
+ * 7. What we don't do vs what we do
+ * 8. Demonstration scenarios (Software Developer, Data Analyst, Ravi)
  */
 
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { api } from '../api/client'
 import { Icon } from '../components/Icon'
@@ -20,45 +26,41 @@ import { useApp } from '../state/AppContext'
 
 const FEATURED_LANGUAGES = ['kn', 'hi', 'en', 'ta', 'te', 'mr']
 
-const PROMISES: { icon: IconName; title: string; body: string }[] = [
-  {
-    icon: 'edit',
-    title: 'You check everything',
-    body: 'Nothing we understood is saved until you confirm it — and you can change any of it.',
-  },
-  {
-    icon: 'shield',
-    title: 'Only checked opportunities',
-    body: 'Every listing shows where it came from and when it was last verified.',
-  },
-  {
-    icon: 'info',
-    title: 'Every suggestion explained',
-    body: 'Each pathway says why it fits you, and what you would still need.',
-  },
-]
-
-const JOURNEY: { icon: IconName; title: string; body: string }[] = [
-  { icon: 'mic', title: 'Voice Intake', body: 'Say what you do or want to do, in your language' },
-  { icon: 'user', title: 'Smart Profile', body: 'Check facts and verified skills' },
-  { icon: 'graph', title: 'Skill Gap', body: 'See what you have, and what’s next' },
-  { icon: 'route', title: 'Pathways', body: 'Verified training, jobs & apprenticeships' },
-  { icon: 'sprout', title: 'Livelihood', body: 'Track step-by-step progress & wage growth' },
-]
-
 const QUOTES = [
-  { text: '“I want to become a software engineer, I know Python and Java…”', field: 'Software & IT' },
-  { text: '“I work on my farm and know how to repair irrigation pumps…”', field: 'Agriculture & Machinery' },
-  { text: '“I know AutoCAD drafting and want a mechanical engineering job…”', field: 'CAD & Design' },
-  { text: '“I do computer hardware troubleshooting and network setup…”', field: 'IT Operations' },
+  { text: '“I know Python and SQL and want to become a software engineer.”', field: 'Software Developer (IT)' },
+  { text: '“I know Excel, but I want to become a data analyst. Do I need Power BI?”', field: 'Data Analyst (BI Tools)' },
+  { text: '“I work in agriculture and repair pumps. I want to earn more without traveling far.”', field: 'Ravi (Agritech & Pump Mechanic)' },
+  { text: '“I know AutoCAD drafting and want an infrastructure CAD job.”', field: 'CAD Draughtsman (Engineering)' },
 ]
 
-const CAREER_TRACKS = [
-  { icon: 'code', label: 'Software & Python' },
-  { icon: 'wrench', label: 'Machinery & Electrical' },
-  { icon: 'sprout', label: 'AgTech & Farming' },
-  { icon: 'briefcase', label: 'IT Support & Helpdesk' },
-  { icon: 'chart', label: 'CAD & Engineering' },
+const FACTORS: { icon: IconName; title: string; desc: string }[] = [
+  { icon: 'cap', title: 'Education Tier', desc: 'School level, ITI trade certificate, polytechnic diploma, or graduate degree.' },
+  { icon: 'wrench', title: 'Skills & Tools', desc: 'Concrete tools (Excel, Python, CAD) separate from competencies (Data Analysis, Programming).' },
+  { icon: 'briefcase', title: 'Work Experience', desc: 'Practical hands-on background in farming, workshop repair, coding, or offices.' },
+  { icon: 'target', title: 'Aspirations & Goals', desc: 'Wage employment, formal apprenticeship, or village micro-enterprise.' },
+  { icon: 'pin', title: 'District Location', desc: 'Village, block, and district to evaluate commute feasibility.' },
+  { icon: 'bus', title: 'Travel Mobility', desc: 'Explicit travel willingness: local block only, taluka, or ready to relocate.' },
+  { icon: 'shield', title: 'Scheme Eligibility', desc: 'Age, community/caste criteria, qualification floors, and financial norms.' },
+  { icon: 'clock', title: 'Opportunity Availability', desc: 'Seats available, active status, valid-until dates, and trusted provider origins.' },
+]
+
+const RULES = [
+  { num: 1, title: 'No Expired Listings', desc: 'Expired or inactive opportunities are never presented as open.' },
+  { num: 2, title: 'Self-Reported ≠ Certified', desc: 'Self-reported skills are labeled declared until validated by assessment or certificate.' },
+  { num: 3, title: 'Eligibility First', desc: 'Eligibility is checked before any opportunity is recommended as a viable pathway.' },
+  { num: 4, title: 'Mobility Alters Ranking', desc: 'A closer opportunity with moderate fit outranks a far opportunity for low-mobility users.' },
+  { num: 5, title: 'Every Pathway Explained', desc: 'Every recommendation shows “Why this pathway?” with exact matching factors and missing skills.' },
+  { num: 6, title: 'No Hallucinated Data', desc: 'If reliable evidence is missing, the system admits it and suggests prerequisite training.' },
+  { num: 7, title: 'Beneficiary Confirmation', desc: 'Extracted details must be confirmed and can be edited anytime by the beneficiary.' },
+  { num: 8, title: 'You Are The Decision-Maker', desc: 'AI provides decision support; the person always chooses their own future.' },
+]
+
+const KNOWLEDGE_SOURCES = [
+  { title: 'NSQF & QP-NOS', org: 'National Council for Vocational Education (NCVET)', desc: 'Occupational standards, competency definitions, and qualification levels.' },
+  { title: 'Skill India Digital & PMKVY', org: 'Ministry of Skill Development & Entrepreneurship', desc: 'Government-subsidised training centers, free courses, and tool kit grants.' },
+  { title: 'National Apprenticeship (NAPS)', org: 'Apprenticeship Training Scheme', desc: 'On-the-job training stipends, industry partnerships, and dual certification.' },
+  { title: 'National Career Service (NCS)', org: 'Ministry of Labour & Employment', desc: 'Verified local job openings and district-level employer listings.' },
+  { title: 'Welfare & Livelihood Schemes', org: 'PM-AJAY, PM Vishwakarma, PMEGP, Mudra', desc: 'Eligibility-aware matching for SC beneficiaries, artisans, and micro-enterprises.' },
 ]
 
 export function Welcome() {
@@ -72,7 +74,7 @@ export function Welcome() {
   useEffect(() => {
     const timer = setInterval(() => {
       setQuoteIndex((prev) => (prev + 1) % QUOTES.length)
-    }, 3800)
+    }, 4000)
     return () => clearInterval(timer)
   }, [])
 
@@ -99,33 +101,65 @@ export function Welcome() {
     (l): l is NonNullable<typeof l> => Boolean(l),
   )
   const others = languages.filter((l) => !FEATURED_LANGUAGES.includes(l.code))
-
   const currentQuote = QUOTES[quoteIndex]
 
   return (
     <Layout bare>
+      {/* Top Banner Navigation */}
+      <div style={{ background: '#0f172a', color: '#e2e8f0', padding: '8px 16px', fontSize: '0.85rem' }}>
+        <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span>
+            <strong style={{ color: '#38bdf8' }}>Smart India Hackathon 2026</strong> · Team Que Sera · Problem Statement: <strong>SIH26097</strong>
+          </span>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <Link to="/system" style={{ color: '#94a3b8', textDecoration: 'none' }}>System Info</Link>
+            {isAuthenticated ? (
+              <Link to="/profile" style={{ color: '#38bdf8', textDecoration: 'none' }}>My Profile ({user?.full_name})</Link>
+            ) : (
+              <>
+                <Link to="/signin" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Sign In</Link>
+                <Link to="/register" style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: 700 }}>Create Account</Link>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Hero Section */}
       <section className="hero">
         <div className="container hero__inner">
           <div className="hero__copy enter">
             <div className="hero__badge-row">
               <span className="eyebrow">
-                <span className="hero__dot" aria-hidden="true" /> Smart India Hackathon · SIH26097
+                <span className="hero__dot" aria-hidden="true" /> AI Multilingual Career Advisor
               </span>
               <span className="hero__live-pill">
-                <Icon name="sparkle" size={12} /> AI Multilingual Intake
+                <Icon name="sparkle" size={12} /> Voice-First Intake
               </span>
             </div>
 
-            <h1 className="hero__title">{t('welcome.hero')}</h1>
-            <p className="hero__lead">{t('welcome.subtitle')}</p>
+            <h1 className="hero__title">Find Your Path to Livelihood.</h1>
+            <p className="hero__lead">
+              Tell us what you do, what you want to do, and where you want to work. We’ll help you discover a recognized training, job, or self-employment pathway that fits.
+            </p>
 
             <div className="hero__actions">
               <Button size="lg" icon="mic" onClick={() => start('voice')} loading={demo.pending}>
-                {t('welcome.speak')}
+                Start Your Journey
               </Button>
               <Button size="lg" variant="secondary" icon="keyboard" onClick={() => start('text')}>
-                {t('welcome.type')}
+                Type Instead
               </Button>
+              {!isAuthenticated && (
+                <>
+                  <Button size="lg" variant="ghost" onClick={() => navigate('/signin')}>
+                    Sign In
+                  </Button>
+                  <Button size="lg" variant="ghost" onClick={() => navigate('/register')}>
+                    Create Account
+                  </Button>
+                </>
+              )}
             </div>
 
             {demo.error ? (
@@ -133,25 +167,6 @@ export function Welcome() {
                 We could not start right now. Please try again in a moment.
               </p>
             ) : null}
-
-            {!isAuthenticated && demoMode ? (
-              <p className="tiny muted" style={{ marginTop: 12 }}>
-                Quick Demo Mode active: test with ready profiles or speak freely.
-              </p>
-            ) : null}
-
-            {/* Career track badges */}
-            <div className="hero__tracks">
-              <span className="hero__tracks-title">Supported Career Sectors:</span>
-              <div className="hero__tracks-pills">
-                {CAREER_TRACKS.map((track) => (
-                  <span key={track.label} className="track-pill">
-                    <Icon name={track.icon} size={13} />
-                    {track.label}
-                  </span>
-                ))}
-              </div>
-            </div>
 
             {/* Language Selection */}
             <div className="hero__langs" role="group" aria-label={t('welcome.language')}>
@@ -205,75 +220,203 @@ export function Welcome() {
         </div>
       </section>
 
-      <section className="container journey-strip-wrap" aria-labelledby="journey-strip-title">
-        <h2 id="journey-strip-title" className="visually-hidden">
-          How it works
-        </h2>
-        <ol className="journey-strip">
-          {JOURNEY.map((step) => (
-            <li key={step.title} className="journey-strip__step">
-              <span className="journey-strip__icon" aria-hidden="true">
-                <Icon name={step.icon} size={22} />
-              </span>
-              <span className="journey-strip__title">{step.title}</span>
-              <span className="journey-strip__body">{step.body}</span>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <section className="container landing-lower">
-        <div className="demo-grid">
-          {/* Demo 1: Ravi (Machinery & Farm) */}
-          <div className="demo-card">
-            <div className="demo-card__person" aria-hidden="true">
-              R
-            </div>
-            <div className="grow">
-              <span className="eyebrow">Guided Profile 1</span>
-              <h3 style={{ margin: '4px 0 6px' }}>Ravi · Pump Mechanic</h3>
-              <p className="small muted" style={{ margin: 0 }}>
-                Machinery repair and farm equipment standard (NSQF Level 3/4) with local workshop listings.
-              </p>
-            </div>
-            <Button variant="dark" icon="play" onClick={() => demo.run('guided')} loading={demo.pending}>
-              {t('welcome.demo')}
-            </Button>
+      {/* Section 1: How the System Works (4-Phase Architecture) */}
+      <section className="home-section home-section--alt">
+        <div className="container">
+          <div className="home-section__header">
+            <span className="eyebrow">Four-Phase Architecture</span>
+            <h2>How the System Works</h2>
+            <p>From spoken conversational intake to explainable livelihood outcomes.</p>
           </div>
-
-          {/* Demo 2: Tech Career (Python / Java / Web) */}
-          <div className="demo-card demo-card--tech">
-            <div className="demo-card__person demo-card__person--tech" aria-hidden="true">
-              <Icon name="code" size={24} />
+          <div className="factors-grid">
+            <div className="factor-card">
+              <div className="factor-card__icon"><Icon name="mic" size={22} /></div>
+              <h3>1. Understand</h3>
+              <p>Multilingual ASR (Kannada, Hindi, English), configurable silence buffer, editable transcripts, and semantic entity extraction.</p>
             </div>
-            <div className="grow">
-              <span className="eyebrow" style={{ color: 'var(--teal-700)' }}>Guided Profile 2</span>
-              <h3 style={{ margin: '4px 0 6px' }}>Software &amp; Coding Track</h3>
-              <p className="small muted" style={{ margin: 0 }}>
-                Python, Java &amp; Web development qualification pathways (NSQF Level 5) with IT opportunities.
-              </p>
+            <div className="factor-card">
+              <div className="factor-card__icon"><Icon name="user" size={22} /></div>
+              <h3>2. Profile & Reason</h3>
+              <p>Constructs structured candidate profile, maps concrete tools vs competencies, and performs rigorous skill-gap diagnostic.</p>
             </div>
-            <Button variant="secondary" icon="arrowRight" onClick={() => start('text')}>
-              Explore Tech Track
-            </Button>
+            <div className="factor-card">
+              <div className="factor-card__icon"><Icon name="route" size={22} /></div>
+              <h3>3. Match & Personalize</h3>
+              <p>Retrieves NSQF/QP-NOS standards, checks welfare scheme eligibility, measures travel mobility, and ranks top 3 pathways.</p>
+            </div>
+            <div className="factor-card">
+              <div className="factor-card__icon"><Icon name="flag" size={22} /></div>
+              <h3>4. Measure & Learn</h3>
+              <p>Follows candidate through enrollment, training completion, employment or micro-enterprise, and feedback tracking.</p>
+            </div>
           </div>
         </div>
+      </section>
 
-        <ul className="promises">
-          {PROMISES.map((promise) => (
-            <li key={promise.title}>
-              <span className="icon-tile icon-tile--teal">
-                <Icon name={promise.icon} size={20} />
-              </span>
-              <div>
-                <h4 style={{ marginBottom: 4 }}>{promise.title}</h4>
-                <p className="small muted" style={{ margin: 0 }}>
-                  {promise.body}
-                </p>
+      {/* Section 2: What We Look At */}
+      <section className="home-section">
+        <div className="container">
+          <div className="home-section__header">
+            <span className="eyebrow">Data Intelligence</span>
+            <h2>What We Look At</h2>
+            <p>Eight connected diagnostic dimensions evaluated to ensure realistic, accessible opportunities.</p>
+          </div>
+          <div className="factors-grid">
+            {FACTORS.map((f) => (
+              <div key={f.title} className="factor-card">
+                <div className="factor-card__icon"><Icon name={f.icon} size={20} /></div>
+                <h3>{f.title}</h3>
+                <p>{f.desc}</p>
               </div>
-            </li>
-          ))}
-        </ul>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Section 3: How Recommendations Work (The Formula) */}
+      <section className="home-section home-section--alt">
+        <div className="container">
+          <div className="formula-banner">
+            <span className="eyebrow" style={{ color: '#38bdf8' }}>Transparent Matching Logic</span>
+            <h2 style={{ margin: 0, fontSize: '1.9rem', color: '#fff' }}>How Recommendations Are Decided</h2>
+            <div className="formula-banner__row">
+              <span className="formula-chip"><Icon name="user" size={16} /> YOUR PROFILE</span>
+              <span className="formula-op">+</span>
+              <span className="formula-chip"><Icon name="cap" size={16} /> PATHWAY REQUIREMENTS</span>
+              <span className="formula-op">+</span>
+              <span className="formula-chip"><Icon name="pin" size={16} /> REAL CONSTRAINTS</span>
+              <span className="formula-op">=</span>
+              <span className="formula-chip formula-chip--result"><Icon name="route" size={16} /> RELEVANT PATHWAYS</span>
+            </div>
+            <p style={{ maxWidth: 640, margin: '8px 0 0', color: '#cbd5e1', fontSize: '0.98rem' }}>
+              We evaluate skill overlap, qualification floor, travel distance, and active availability. No arbitrary percentages or black-box guessing.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 4: Our 8 Recommendation Rules */}
+      <section className="home-section">
+        <div className="container">
+          <div className="home-section__header">
+            <span className="eyebrow">Ethical Public Service AI</span>
+            <h2>Our Recommendation Rules</h2>
+            <p>Built into the backend recommendation service to protect beneficiaries from misleading advice.</p>
+          </div>
+          <div className="rules-grid">
+            {RULES.map((r) => (
+              <div key={r.num} className="rule-item">
+                <div className="rule-num">{r.num}</div>
+                <div>
+                  <h4>{r.title}</h4>
+                  <p>{r.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Section 5: Demonstration Scenarios */}
+      <section className="home-section home-section--alt">
+        <div className="container">
+          <div className="home-section__header">
+            <span className="eyebrow">Interactive Demonstration</span>
+            <h2>Explore Verified Career Tracks</h2>
+            <p>See how the matching engine distinguishes tools from competencies across diverse domains.</p>
+          </div>
+          <div className="factors-grid">
+            {/* Scenario A: Software Developer */}
+            <div className="factor-card" style={{ borderTop: '4px solid #3b82f6' }}>
+              <span className="eyebrow" style={{ color: '#2563eb' }}>Scenario A · IT &amp; Tech</span>
+              <h3 style={{ margin: '6px 0 4px' }}>Software Developer</h3>
+              <p style={{ marginBottom: 14 }}>
+                Candidate knows Python and SQL. Matches NSQF Level 5 Junior Developer with missing API unit testing.
+              </p>
+              <Button size="sm" variant="secondary" icon="arrowRight" onClick={() => start('text')}>
+                Try Software Track
+              </Button>
+            </div>
+
+            {/* Scenario B: Data Analyst */}
+            <div className="factor-card" style={{ borderTop: '4px solid #8b5cf6' }}>
+              <span className="eyebrow" style={{ color: '#7c3aed' }}>Scenario B · Business Intelligence</span>
+              <h3 style={{ margin: '6px 0 4px' }}>Data Analyst</h3>
+              <p style={{ marginBottom: 14 }}>
+                Treats Excel as a spreadsheet tool and identifies required competencies (Data Analysis &amp; Power BI).
+              </p>
+              <Button size="sm" variant="secondary" icon="arrowRight" onClick={() => start('text')}>
+                Try Data Track
+              </Button>
+            </div>
+
+            {/* Scenario C: Ravi */}
+            <div className="factor-card" style={{ borderTop: '4px solid #0d9488' }}>
+              <span className="eyebrow" style={{ color: '#0d9488' }}>Scenario C · Agritech &amp; Trades</span>
+              <h3 style={{ margin: '6px 0 4px' }}>Ravi · Pump Mechanic</h3>
+              <p style={{ marginBottom: 14 }}>
+                Farmer with pump repair experience and low mobility. Ranks local micro-enterprise and village service center.
+              </p>
+              <Button size="sm" variant="dark" icon="play" onClick={() => demo.run('guided')} loading={demo.pending}>
+                Launch Ravi Demo
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 6: Where Knowledge Comes From */}
+      <section className="home-section">
+        <div className="container">
+          <div className="home-section__header">
+            <span className="eyebrow">Grounding &amp; Provenance</span>
+            <h2>Where the Knowledge Comes From</h2>
+            <p>Grounded in recognized Indian skilling frameworks and authentic government portal records.</p>
+          </div>
+          <div className="factors-grid">
+            {KNOWLEDGE_SOURCES.map((s) => (
+              <div key={s.title} className="factor-card">
+                <span className="eyebrow" style={{ color: 'var(--teal-700)' }}>{s.org}</span>
+                <h3 style={{ margin: '6px 0 4px' }}>{s.title}</h3>
+                <p>{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Section 7: What We Don't Do vs What We Do */}
+      <section className="home-section home-section--alt">
+        <div className="container">
+          <div className="home-section__header">
+            <span className="eyebrow">Transparency Guarantee</span>
+            <h2>Our Commitments</h2>
+            <p>Clear principles on what the platform promises and what it will never claim.</p>
+          </div>
+          <div className="trust-split">
+            <div className="trust-col trust-col--dont">
+              <h3><Icon name="x" size={20} strokeWidth={3} /> What We Do NOT Do</h3>
+              <ul className="trust-list">
+                <li><Icon name="x" size={16} strokeWidth={2.5} /> We never invent jobs or course vacancies.</li>
+                <li><Icon name="x" size={16} strokeWidth={2.5} /> We never treat self-reported skills as certified qualifications.</li>
+                <li><Icon name="x" size={16} strokeWidth={2.5} /> We never guarantee government scheme grants or employment.</li>
+                <li><Icon name="x" size={16} strokeWidth={2.5} /> We never make irrevocable career decisions for the beneficiary.</li>
+                <li><Icon name="x" size={16} strokeWidth={2.5} /> We never hide the reasoning behind any recommendation.</li>
+              </ul>
+            </div>
+
+            <div className="trust-col trust-col--do">
+              <h3><Icon name="check" size={20} strokeWidth={3} /> What We DO</h3>
+              <ul className="trust-list">
+                <li><Icon name="check" size={16} strokeWidth={2.5} /> We explain the exact factors behind every pathway recommendation.</li>
+                <li><Icon name="check" size={16} strokeWidth={2.5} /> We allow beneficiaries to inspect, edit, and confirm their profiles.</li>
+                <li><Icon name="check" size={16} strokeWidth={2.5} /> We show source provenance, verification status, and freshness dates.</li>
+                <li><Icon name="check" size={16} strokeWidth={2.5} /> We offer prerequisite training pathways when direct jobs are unavailable.</li>
+                <li><Icon name="check" size={16} strokeWidth={2.5} /> We keep beneficiaries in full control of their livelihood journey.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </section>
     </Layout>
   )

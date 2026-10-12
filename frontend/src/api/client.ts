@@ -181,6 +181,18 @@ export const api = {
     request<AuthResponse>('/auth/login', { method: 'POST', body: { email, password }, auth: false }),
   register: (payload: Record<string, unknown>) =>
     request<AuthResponse>('/auth/register', { method: 'POST', body: payload, auth: false }),
+  sendOtp: (payload: { destination: string; challenge_type: 'email' | 'phone' | 'password_reset' }) =>
+    request<import('./types').SendOtpResponse>('/auth/otp/send', { method: 'POST', body: payload, auth: false }),
+  verifyOtp: (payload: { destination: string; challenge_type: 'email' | 'phone' | 'password_reset'; code: string }) =>
+    request<import('./types').VerifyOtpResponse>('/auth/otp/verify', { method: 'POST', body: payload, auth: false }),
+  requestPasswordReset: (destination: string) =>
+    request<import('./types').SendOtpResponse>('/auth/password-reset/request', {
+      method: 'POST',
+      body: { destination, challenge_type: 'password_reset' },
+      auth: false,
+    }),
+  confirmPasswordReset: (payload: { email: string; code: string; new_password: string }) =>
+    request<{ message: string }>('/auth/password-reset/confirm', { method: 'POST', body: payload, auth: false }),
   me: () => request<User>('/auth/me'),
   logout: () => request<void>('/auth/logout', { method: 'POST' }),
 
